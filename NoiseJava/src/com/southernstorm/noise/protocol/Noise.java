@@ -1,7 +1,31 @@
+/*
+ * Copyright (C) 2016 Southern Storm Software, Pty Ltd.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.southernstorm.noise.protocol;
 
+import java.util.Arrays;
+
 /**
- * Constants for the Noise protocol library.
+ * Constants and utility functions for the Noise protocol library.
  */
 public final class Noise {
 
@@ -78,4 +102,25 @@ public final class Noise {
 	 */
 	public static final int PATTERN_XX_FALLBACK = 0x5010;
 
+	/**
+	 * Destroys the contents of a byte array.
+	 * 
+	 * @param array The array whose contents should be destroyed.
+	 */
+	public static void destroy(byte[] array)
+	{
+		Arrays.fill(array, (byte)0);
+	}
+	
+	public static CipherState createCipher(String name)
+	{
+		// TODO
+		return null;
+	}
+	
+	public static HashState createHash(String name)
+	{
+		// TODO
+		return null;
+	}
 }
