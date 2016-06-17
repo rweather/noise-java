@@ -23,7 +23,6 @@
 package com.southernstorm.noise.tests;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 import java.security.DigestException;
 import java.security.MessageDigest;
@@ -73,8 +72,7 @@ public class HashTests {
 		try {
 			digest = Noise.createHash("BLAKE2b");
 		} catch (NoSuchAlgorithmException e) {
-			//fail("No crypto provider for BLAKE2b");
-			assumeNoException(e);
+			fail("No crypto provider for BLAKE2b");
 		}
 		testHash(digest, "", "0x786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce");
 		testHash(digest, "abc", "0xba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923");
@@ -88,8 +86,7 @@ public class HashTests {
 		try {
 			digest = Noise.createHash("BLAKE2s");
 		} catch (NoSuchAlgorithmException e) {
-			//fail("No crypto provider for BLAKE2s");
-			assumeNoException(e);
+			fail("No crypto provider for BLAKE2s");
 		}
 		testHash(digest, "", "0x69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9");
 		testHash(digest, "abc", "0x508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982");

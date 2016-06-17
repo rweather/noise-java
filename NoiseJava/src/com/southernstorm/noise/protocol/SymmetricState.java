@@ -255,7 +255,12 @@ public class SymmetricState implements Destroyable {
 			cipher = null;
 		}
 		if (hash != null) {
-			hash.reset();
+			// The built-in fallback implementations are destroyable.
+			// JCA/JCE implementations aren't, so try reset() instead.
+			if (hash instanceof Destroyable)
+				((Destroyable)hash).destroy();
+			else
+				hash.reset();
 			hash = null;
 		}
 		if (ck != null) {
