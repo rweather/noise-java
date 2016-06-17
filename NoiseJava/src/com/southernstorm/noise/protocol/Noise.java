@@ -22,6 +22,8 @@
 
 package com.southernstorm.noise.protocol;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
@@ -118,9 +120,30 @@ public final class Noise {
 		return null;
 	}
 	
-	public static HashState createHash(String name)
+	/**
+	 * Creates a hash object from its Noise protocol name.
+	 * 
+	 * @param name The name of the hash algorithm; e.g. "SHA256", "BLAKE2s", etc.
+	 * 
+	 * @return The hash object if the name is recognized.
+	 * 
+	 * @throws NoSuchAlgorithmException The name is not recognized as a
+	 * valid Noise protocol name, or there is no cryptography provider
+	 * in the system that implements the algorithm.
+	 */
+	public static MessageDigest createHash(String name) throws NoSuchAlgorithmException
 	{
-		// TODO
-		return null;
+		// The SHA-256 and SHA-512 names are fairly common in standard JDK's.
+		// The BLAKE2 algorithms will need the installation of a third-party
+		// cryptography provider like Bouncy Castle.
+		if (name.equals("SHA256"))
+			return MessageDigest.getInstance("SHA-256");
+		else if (name.equals("SHA512"))
+			return MessageDigest.getInstance("SHA-512");
+		else if (name.equals("BLAKE2b"))
+			return MessageDigest.getInstance("Blake2b");
+		else if (name.equals("BLAKE2s"))
+			return MessageDigest.getInstance("Blake2s");
+		throw new NoSuchAlgorithmException("Unknown Noise hash algorithm name: " + name);
 	}
 }

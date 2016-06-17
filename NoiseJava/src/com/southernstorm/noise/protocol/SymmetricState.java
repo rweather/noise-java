@@ -23,6 +23,8 @@
 package com.southernstorm.noise.protocol;
 
 import java.io.UnsupportedEncodingException;
+import java.security.DigestException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
@@ -33,7 +35,7 @@ public class SymmetricState implements Destroyable {
 	
 	private String name;
 	private CipherState cipher;
-	private HashState hash;
+	private MessageDigest hash;
 	private byte[] ck;
 	private byte[] h;
 
@@ -53,7 +55,7 @@ public class SymmetricState implements Destroyable {
 		hash = Noise.createHash(components[4]);
 		int keyLength = cipher.getKeyLength();
 		ck = new byte [keyLength];
-		int hashLength = hash.getHashLength();
+		int hashLength = hash.getDigestLength();
 		h = new byte [hashLength];
 		
 		byte[] protocolNameBytes;
@@ -68,7 +70,7 @@ public class SymmetricState implements Destroyable {
 			System.arraycopy(protocolNameBytes, 0, h, 0, protocolNameBytes.length);
 			Arrays.fill(h, protocolNameBytes.length, h.length, (byte)0);
 		} else {
-			hashOne(protocolNameBytes, 0, protocolNameBytes.length, h, 0);
+			hashOne(protocolNameBytes, 0, protocolNameBytes.length, h, 0, h.length);
 		}
 		
 		System.arraycopy(h, 0, ck, 0, keyLength);
@@ -123,7 +125,7 @@ public class SymmetricState implements Destroyable {
 	 */
 	public void mixHash(byte[] data, int offset, int length)
 	{
-		hashTwo(h, 0, h.length, data, offset, length, h, 0);
+		hashTwo(h, 0, h.length, data, offset, length, h, 0, h.length);
 	}
 
 	/**
@@ -253,7 +255,7 @@ public class SymmetricState implements Destroyable {
 			cipher = null;
 		}
 		if (hash != null) {
-			hash.destroy();
+			hash.reset();
 			hash = null;
 		}
 		if (ck != null) {
@@ -274,14 +276,19 @@ public class SymmetricState implements Destroyable {
 	 * @param length Length of the data to be hashed.
 	 * @param output The buffer to receive the output hash value.
 	 * @param outputOffset Offset into the output buffer to place the hash value.
+	 * @param outputLength The length of the hash output.
 	 * 
 	 * The output buffer can be the same as the input data buffer.
 	 */
-	private void hashOne(byte[] data, int offset, int length, byte[] output, int outputOffset)
+	private void hashOne(byte[] data, int offset, int length, byte[] output, int outputOffset, int outputLength)
 	{
 		hash.reset();
 		hash.update(data, offset, length);
-		hash.finish(output, outputOffset);
+		try {
+			hash.digest(output, outputOffset, outputLength);
+		} catch (DigestException e) {
+			Arrays.fill(output, outputOffset, outputLength, (byte)0);
+		}
 	}
 
 	/**
@@ -295,17 +302,22 @@ public class SymmetricState implements Destroyable {
 	 * @param length2 Length of the second data to be hashed.
 	 * @param output The buffer to receive the output hash value.
 	 * @param outputOffset Offset into the output buffer to place the hash value.
+	 * @param outputLength The length of the hash output.
 	 * 
 	 * The output buffer can be same as either of the input buffers.
 	 */
 	private void hashTwo(byte[] data1, int offset1, int length1,
 			     		 byte[] data2, int offset2, int length2,
-			     		 byte[] output, int outputOffset)
+			     		 byte[] output, int outputOffset, int outputLength)
 	{
 		hash.reset();
 		hash.update(data1, offset1, length1);
 		hash.update(data2, offset2, length2);
-		hash.finish(output, outputOffset);
+		try {
+			hash.digest(output, outputOffset, outputLength);
+		} catch (DigestException e) {
+			Arrays.fill(output, outputOffset, outputLength, (byte)0);
+		}
 	}
 
 	/**
@@ -319,13 +331,16 @@ public class SymmetricState implements Destroyable {
 	 * @param dataLength The length of the data in bytes.
 	 * @param output The output buffer to place the HMAC value in.
 	 * @param outputOffset Offset into the output buffer for the HMAC value.
+	 * @param outputLength The length of the HMAC output.
 	 */
 	private void hmac(byte[] key, int keyOffset, int keyLength,
 					  byte[] data, int dataOffset, int dataLength,
-					  byte[] output, int outputOffset)
+					  byte[] output, int outputOffset, int outputLength)
 	{
-		int blockLength = hash.getBlockLength();
-		int hashLength = hash.getHashLength();
+		// In all of the algorithms of interest to us, the block length
+		// is twice the size of the hash length.
+		int hashLength = hash.getDigestLength();
+		int blockLength = hashLength * 2;
 		byte[] block = new byte [blockLength];
 		int index;
 		try {
@@ -335,7 +350,7 @@ public class SymmetricState implements Destroyable {
 			} else {
 				hash.reset();
 				hash.update(key, keyOffset, keyLength);
-				hash.finish(block, 0);
+				hash.digest(block, 0, hashLength);
 				Arrays.fill(block, hashLength, blockLength, (byte)0);
 			}
 			for (index = 0; index < blockLength; ++index)
@@ -343,13 +358,15 @@ public class SymmetricState implements Destroyable {
 			hash.reset();
 			hash.update(block, 0, blockLength);
 			hash.update(data, dataOffset, dataLength);
-			hash.finish(output, outputOffset);
+			hash.digest(output, outputOffset, outputLength);
 			for (index = 0; index < blockLength; ++index)
 				block[index] ^= (byte)(0x36 ^ 0x5C);
 			hash.reset();
 			hash.update(block, 0, blockLength);
 			hash.update(output, outputOffset, hashLength);
-			hash.finish(output, outputOffset);
+			hash.digest(output, outputOffset, outputLength);
+		} catch (DigestException e) {
+			Arrays.fill(output, outputOffset, outputLength, (byte)0);
 		} finally {
 			Noise.destroy(block);
 		}
@@ -378,16 +395,16 @@ public class SymmetricState implements Destroyable {
 			  		  byte[] output1, int output1Offset, int output1Length,
 			  		  byte[] output2, int output2Offset, int output2Length)
 	{
-		int hashLength = hash.getHashLength();
+		int hashLength = hash.getDigestLength();
 		byte[] tempKey = new byte [hashLength];
 		byte[] tempHash = new byte [hashLength + 1];
 		try {
-			hmac(key, keyOffset, keyLength, data, dataOffset, dataLength, tempKey, 0);
+			hmac(key, keyOffset, keyLength, data, dataOffset, dataLength, tempKey, 0, hashLength);
 			tempHash[0] = (byte)0x01;
-			hmac(tempKey, 0, hashLength, tempHash, 0, 1, tempHash, 0);
+			hmac(tempKey, 0, hashLength, tempHash, 0, 1, tempHash, 0, hashLength);
 			System.arraycopy(tempHash, 0, output1, output1Offset, output1Length);
 			tempHash[hashLength] = (byte)0x02;
-			hmac(tempKey, 0, hashLength, tempHash, 0, hashLength + 1, tempHash, 0);
+			hmac(tempKey, 0, hashLength, tempHash, 0, hashLength + 1, tempHash, 0, hashLength);
 			System.arraycopy(tempHash, 0, output2, output2Offset, output2Length);
 		} finally {
 			Noise.destroy(tempKey);
