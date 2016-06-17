@@ -89,7 +89,8 @@ public interface CipherState extends Destroyable {
 	 * @param ciphertextOffset The first offset within the ciphertext buffer
 	 * to place the ciphertext and the MAC tag.
 	 * @param length The length of the plaintext.
-	 * @return The length of the ciphertext plus the MAC tag.
+	 * @return The length of the ciphertext plus the MAC tag, or -1 if the
+	 * ciphertext buffer is not large enough to hold the result.
 	 * 
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * encryption.  In that case, plaintextOffset must be identical to
@@ -113,7 +114,8 @@ public interface CipherState extends Destroyable {
 	 * to place the plaintext.
 	 * @param length The length of the incoming ciphertext plus the MAC tag.
 	 * @return The length of the plaintext with the MAC tag stripped off,
-	 * or -1 if the tag did not verify.
+	 * or -1 if the tag did not verify, or -1 if the plaintext buffer is
+	 * not big enough to hold the result.
 	 * 
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * decryption.  In that case, ciphertextOffset must be identical to

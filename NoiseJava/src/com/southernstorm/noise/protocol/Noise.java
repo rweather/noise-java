@@ -41,10 +41,22 @@ public final class Noise {
 		Arrays.fill(array, (byte)0);
 	}
 	
-	public static CipherState createCipher(String name)
+	/**
+	 * Creates a cipher object from its Noise protocol name.
+	 * 
+	 * @param name The name of the cipher algorithm; e.g. "AESGCM", "ChaChaPoly", etc.
+	 * 
+	 * @return The cipher object if the name is recognized.
+	 * 
+	 * @throws NoSuchAlgorithmException The name is not recognized as a
+	 * valid Noise protocol name, or there is no cryptography provider
+	 * in the system that implements the algorithm.
+	 */
+	public static CipherState createCipher(String name) throws NoSuchAlgorithmException
 	{
-		// TODO
-		return null;
+		if (name.equals("AESGCM"))
+			return new AESGCMCipherState();
+		throw new NoSuchAlgorithmException("Unknown Noise cipher algorithm name: " + name);
 	}
 	
 	/**
