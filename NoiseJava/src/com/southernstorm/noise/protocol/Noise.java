@@ -24,6 +24,7 @@ package com.southernstorm.noise.protocol;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 
 import com.southernstorm.noise.crypto.Blake2bMessageDigest;
@@ -43,7 +44,37 @@ public final class Noise {
 	{
 		Arrays.fill(array, (byte)0);
 	}
+
+	private static SecureRandom random = new SecureRandom();
 	
+	/**
+	 * Generates random data using the system random number generator.
+	 * 
+	 * @param data The data buffer to fill with random data.
+	 */
+	public static void random(byte[] data)
+	{
+		random.nextBytes(data);
+	}
+
+	/**
+	 * Creates a Diffie-Hellman object from its Noise protocol name.
+	 * 
+	 * @param name The name of the DH algorithm; e.g. "25519", "448", etc.
+	 * 
+	 * @return The Diffie-Hellman object if the name is recognized.
+	 * 
+	 * @throws NoSuchAlgorithmException The name is not recognized as a
+	 * valid Noise protocol name, or there is no cryptography provider
+	 * in the system that implements the algorithm.
+	 */
+	public static DHState createDH(String name) throws NoSuchAlgorithmException
+	{
+		if (name.equals("25519"))
+			return new Curve25519DHState();
+		throw new NoSuchAlgorithmException("Unknown Noise DH algorithm name: " + name);
+	}
+
 	/**
 	 * Creates a cipher object from its Noise protocol name.
 	 * 
