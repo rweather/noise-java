@@ -59,6 +59,8 @@ public final class Noise {
 	{
 		if (name.equals("AESGCM"))
 			return new AESGCMCipherState();
+		else if (name.equals("ChaChaPoly"))
+			return new ChaChaPolyCipherState();
 		throw new NoSuchAlgorithmException("Unknown Noise cipher algorithm name: " + name);
 	}
 	

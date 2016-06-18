@@ -91,7 +91,7 @@ class AESGCMCipherState implements CipherState {
 
 	@Override
 	public int getMACLength() {
-		return keySpec != null ? 32 : 0;
+		return keySpec != null ? 16 : 0;
 	}
 
 	/**
