@@ -36,15 +36,10 @@ import com.southernstorm.noise.crypto.Blake2sMessageDigest;
 public final class Noise {
 
 	/**
-	 * Destroys the contents of a byte array.
-	 * 
-	 * @param array The array whose contents should be destroyed.
+	 * Maximum length for Noise packets.
 	 */
-	public static void destroy(byte[] array)
-	{
-		Arrays.fill(array, (byte)0);
-	}
-
+	public static final int MAX_PACKET_LEN = 65535;
+	
 	private static SecureRandom random = new SecureRandom();
 	
 	/**
@@ -134,5 +129,34 @@ public final class Noise {
 			}
 		}
 		throw new NoSuchAlgorithmException("Unknown Noise hash algorithm name: " + name);
+	}
+
+	// The rest of this class consists of internal utility functions
+	// that are not part of the public API.
+
+	/**
+	 * Destroys the contents of a byte array.
+	 * 
+	 * @param array The array whose contents should be destroyed.
+	 */
+	static void destroy(byte[] array)
+	{
+		Arrays.fill(array, (byte)0);
+	}
+
+	/**
+	 * Makes a copy of part of an array.
+	 * 
+	 * @param data The buffer containing the data to copy.
+	 * @param offset Offset of the first byte to copy.
+	 * @param length The number of bytes to copy.
+	 * 
+	 * @return A new array with a copy of the sub-array.
+	 */
+	static byte[] copySubArray(byte[] data, int offset, int length)
+	{
+		byte[] copy = new byte [length];
+		System.arraycopy(data, offset, copy, 0, length);
+		return copy;
 	}
 }

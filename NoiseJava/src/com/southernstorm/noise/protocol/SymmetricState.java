@@ -28,6 +28,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import javax.crypto.AEADBadTagException;
+import javax.crypto.ShortBufferException;
+
 /**
  * Symmetric state for helping manage a Noise handshake.
  */
@@ -43,16 +46,17 @@ public class SymmetricState implements Destroyable {
 	 * Constructs a new symmetric state object.
 	 * 
 	 * @param protocolName The name of the Noise protocol, which is assumed to be valid.
+	 * @param cipherName The name of the cipher within protocolName.
+	 * @param hashName The name of the hash within protocolName.
 	 * 
 	 * @throws NoSuchAlgorithmException The cipher or hash algorithm in the
 	 * protocol name is not supported.
 	 */
-	public SymmetricState(String protocolName) throws NoSuchAlgorithmException
+	public SymmetricState(String protocolName, String cipherName, String hashName) throws NoSuchAlgorithmException
 	{
-		String[] components = protocolName.split("_");
 		name = protocolName;
-		cipher = Noise.createCipher(components[3]);
-		hash = Noise.createHash(components[4]);
+		cipher = Noise.createCipher(cipherName);
+		hash = Noise.createHash(hashName);
 		int keyLength = cipher.getKeyLength();
 		ck = new byte [keyLength];
 		int hashLength = hash.getDigestLength();
@@ -129,6 +133,38 @@ public class SymmetricState implements Destroyable {
 	}
 
 	/**
+	 * Mixes a pre-shared key into the chaining key and handshake hash.
+	 * 
+	 * @param key The pre-shared key value.
+	 */
+	public void mixPreSharedKey(byte[] key)
+	{
+		byte[] temp = new byte [hash.getDigestLength()];
+		try {
+			hkdf(ck, 0, ck.length, key, 0, key.length, ck, 0, ck.length, temp, 0, temp.length);
+			mixHash(temp, 0, temp.length);
+		} finally {
+			Noise.destroy(temp);
+		}
+	}
+
+	/**
+	 * Mixes a pre-supplied public key into the handshake hash.
+	 * 
+	 * @param dh The object containing the public key.
+	 */
+	public void mixPublicKey(DHState dh)
+	{
+		byte[] temp = new byte [dh.getPublicKeyLength()];
+		try {
+			dh.getPublicKey(temp, 0);
+			mixHash(temp, 0, temp.length);
+		} finally {
+			Noise.destroy(temp);
+		}
+	}
+
+	/**
 	 * Encrypts a block of plaintext and mixes the ciphertext into the handshake hash.
 	 * 
 	 * @param plaintext The buffer containing the plaintext to encrypt.
@@ -141,6 +177,9 @@ public class SymmetricState implements Destroyable {
 	 * @param length The length of the plaintext.
 	 * @return The length of the ciphertext plus the MAC tag.
 	 * 
+	 * @throws ShortBufferException There is not enough space in the
+	 * ciphertext buffer for the encrypted data plus MAC value.
+	 * 
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * encryption.  In that case, plaintextOffset must be identical to
 	 * ciphertextOffset.
@@ -148,7 +187,7 @@ public class SymmetricState implements Destroyable {
 	 * There must be enough space in the ciphertext buffer to accomodate
 	 * length + getMACLength() bytes of data starting at ciphertextOffset.
 	 */
-	public int encryptAndHash(byte[] plaintext, int plaintextOffset, byte[] ciphertext, int ciphertextOffset, int length)
+	public int encryptAndHash(byte[] plaintext, int plaintextOffset, byte[] ciphertext, int ciphertextOffset, int length) throws ShortBufferException
 	{
 		int ciphertextLength = cipher.encryptWithAd(h, plaintext, plaintextOffset, ciphertext, ciphertextOffset, length);
 		mixHash(ciphertext, ciphertextOffset, ciphertextLength);
@@ -166,14 +205,18 @@ public class SymmetricState implements Destroyable {
 	 * @param plaintextOffset The first offset within the plaintext buffer
 	 * to place the plaintext.
 	 * @param length The length of the incoming ciphertext plus the MAC tag.
-	 * @return The length of the plaintext with the MAC tag stripped off,
-	 * or -1 if the tag did not verify.
+	 * @return The length of the plaintext with the MAC tag stripped off.
+	 * 
+	 * @throws ShortBufferException There is not enough space in the plaintext
+	 * buffer for the decrypted data.
+	 * 
+	 * @throws AEADBadTagException The MAC value failed to verify.
 	 * 
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * decryption.  In that case, ciphertextOffset must be identical to
 	 * plaintextOffset.
 	 */
-	public int decryptAndHash(byte[] ciphertext, int ciphertextOffset, byte[] plaintext, int plaintextOffset, int length)
+	public int decryptAndHash(byte[] ciphertext, int ciphertextOffset, byte[] plaintext, int plaintextOffset, int length) throws ShortBufferException, AEADBadTagException
 	{
 		mixHash(ciphertext, ciphertextOffset, length);
 		return cipher.decryptWithAd(h, ciphertext, ciphertextOffset, plaintext, plaintextOffset, length);

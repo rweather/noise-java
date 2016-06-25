@@ -22,6 +22,9 @@
 
 package com.southernstorm.noise.protocol;
 
+import javax.crypto.AEADBadTagException;
+import javax.crypto.ShortBufferException;
+
 /**
  * Interface to an authenticated cipher for use in the Noise protocol.
  *
@@ -92,6 +95,9 @@ public interface CipherState extends Destroyable {
 	 * @return The length of the ciphertext plus the MAC tag, or -1 if the
 	 * ciphertext buffer is not large enough to hold the result.
 	 * 
+	 * @throws ShortBufferException The ciphertext buffer does not have
+	 * enough space to hold the ciphertext plus MAC.
+	 * 
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * encryption.  In that case, plaintextOffset must be identical to
 	 * ciphertextOffset.
@@ -99,7 +105,7 @@ public interface CipherState extends Destroyable {
 	 * There must be enough space in the ciphertext buffer to accomodate
 	 * length + getMACLength() bytes of data starting at ciphertextOffset.
 	 */
-	int encryptWithAd(byte[] ad, byte[] plaintext, int plaintextOffset, byte[] ciphertext, int ciphertextOffset, int length);
+	int encryptWithAd(byte[] ad, byte[] plaintext, int plaintextOffset, byte[] ciphertext, int ciphertextOffset, int length) throws ShortBufferException;
 
 	/**
 	 * Decrypts a ciphertext buffer using the cipher and a block of associated data.
@@ -113,15 +119,18 @@ public interface CipherState extends Destroyable {
 	 * @param plaintextOffset The first offset within the plaintext buffer
 	 * to place the plaintext.
 	 * @param length The length of the incoming ciphertext plus the MAC tag.
-	 * @return The length of the plaintext with the MAC tag stripped off,
-	 * or -1 if the tag did not verify, or -1 if the plaintext buffer is
-	 * not big enough to hold the result.
+	 * @return The length of the plaintext with the MAC tag stripped off.
+	 * 
+	 * @throws ShortBufferException The plaintext buffer does not have
+	 * enough space to store the decrypted data.
+	 * 
+	 * @throws AEADBadTagException The MAC value failed to verify.
 	 * 
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * decryption.  In that case, ciphertextOffset must be identical to
 	 * plaintextOffset.
 	 */
-	int decryptWithAd(byte[] ad, byte[] ciphertext, int ciphertextOffset, byte[] plaintext, int plaintextOffset, int length);
+	int decryptWithAd(byte[] ad, byte[] ciphertext, int ciphertextOffset, byte[] plaintext, int plaintextOffset, int length) throws ShortBufferException, AEADBadTagException;
 
 	/**
 	 * Creates a new instance of this cipher and initializes it with a key.

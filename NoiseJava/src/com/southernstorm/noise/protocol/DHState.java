@@ -143,4 +143,14 @@ public interface DHState extends Destroyable {
 	 * type as this object, or one of the objects does not contain a valid key.
 	 */
 	void calculate(byte[] sharedKey, int offset, DHState publicDH);
+	
+	/**
+	 * Copies the key values from another DH object of the same type.
+	 * 
+	 * @param other The other DH object to copy from
+	 * 
+	 * @throws IllegalStateException The other DH object does not have
+	 * the same type as this object.
+	 */
+	void copyFrom(DHState other);
 }

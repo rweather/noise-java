@@ -141,4 +141,16 @@ class Curve25519DHState implements DHState {
 			throw new IllegalArgumentException("Incompatible DH algorithms");
 		Curve25519.eval(sharedKey, offset, privateKey, ((Curve25519DHState)publicDH).publicKey);
 	}
+
+	@Override
+	public void copyFrom(DHState other) {
+		if (!(other instanceof Curve25519DHState))
+			throw new IllegalStateException("Mismatched DH key objects");
+		if (other == this)
+			return;
+		Curve25519DHState dh = (Curve25519DHState)other;
+		System.arraycopy(dh.privateKey, 0, privateKey, 0, 32);
+		System.arraycopy(dh.publicKey, 0, publicKey, 0, 32);
+		mode = dh.mode;
+	}
 }

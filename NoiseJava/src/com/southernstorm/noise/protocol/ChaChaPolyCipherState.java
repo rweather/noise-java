@@ -24,6 +24,9 @@ package com.southernstorm.noise.protocol;
 
 import java.util.Arrays;
 
+import javax.crypto.AEADBadTagException;
+import javax.crypto.ShortBufferException;
+
 import com.southernstorm.noise.crypto.ChaChaCore;
 import com.southernstorm.noise.crypto.Poly1305;
 
@@ -207,13 +210,22 @@ class ChaChaPolyCipherState implements CipherState {
 
 	@Override
 	public int encryptWithAd(byte[] ad, byte[] plaintext, int plaintextOffset,
-			byte[] ciphertext, int ciphertextOffset, int length) {
+			byte[] ciphertext, int ciphertextOffset, int length) throws ShortBufferException {
+		int space;
+		if (ciphertextOffset > ciphertext.length)
+			space = 0;
+		else
+			space = ciphertext.length - ciphertextOffset;
 		if (!haskey) {
 			// The key is not set yet - return the plaintext as-is.
+			if (length > space)
+				throw new ShortBufferException();
 			if (plaintext != ciphertext || plaintextOffset != ciphertextOffset)
 				System.arraycopy(plaintext, plaintextOffset, ciphertext, ciphertextOffset, length);
 			return length;
 		}
+		if (space < 16 || length > (space - 16))
+			throw new ShortBufferException();
 		setup(ad);
 		encrypt(plaintext, plaintextOffset, ciphertext, ciphertextOffset, length);
 		finish(ad, length);
@@ -224,7 +236,14 @@ class ChaChaPolyCipherState implements CipherState {
 	@Override
 	public int decryptWithAd(byte[] ad, byte[] ciphertext,
 			int ciphertextOffset, byte[] plaintext, int plaintextOffset,
-			int length) {
+			int length) throws ShortBufferException, AEADBadTagException {
+		int space;
+		if (plaintextOffset > plaintext.length)
+			space = 0;
+		else
+			space = plaintext.length - plaintextOffset;
+		if (length > space)
+			throw new ShortBufferException();
 		if (!haskey) {
 			// The key is not set yet - return the ciphertext as-is.
 			if (plaintext != ciphertext || plaintextOffset != ciphertextOffset)
@@ -232,7 +251,7 @@ class ChaChaPolyCipherState implements CipherState {
 			return length;
 		}
 		if (length < 16)
-			return -1;
+			throw new AEADBadTagException();
 		int dataLen = length = 16;
 		setup(ad);
 		poly.update(ciphertext, ciphertextOffset, dataLen);
@@ -241,7 +260,7 @@ class ChaChaPolyCipherState implements CipherState {
 		for (int index = 0; index < 16; ++index)
 			temp |= (polyKey[index] ^ ciphertext[ciphertextOffset + dataLen + index]);
 		if (temp != 0)
-			return -1;
+			throw new AEADBadTagException();
 		encrypt(ciphertext, ciphertextOffset, plaintext, plaintextOffset, dataLen);
 		return dataLen;
 	}
