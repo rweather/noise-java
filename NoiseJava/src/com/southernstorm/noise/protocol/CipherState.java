@@ -98,6 +98,8 @@ public interface CipherState extends Destroyable {
 	 * @throws ShortBufferException The ciphertext buffer does not have
 	 * enough space to hold the ciphertext plus MAC.
 	 * 
+	 * @throws IllegalStateException The nonce has wrapped around.
+	 * 
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * encryption.  In that case, plaintextOffset must be identical to
 	 * ciphertextOffset.
@@ -126,6 +128,8 @@ public interface CipherState extends Destroyable {
 	 * 
 	 * @throws AEADBadTagException The MAC value failed to verify.
 	 * 
+	 * @throws IllegalStateException The nonce has wrapped around.
+	 * 
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * decryption.  In that case, ciphertextOffset must be identical to
 	 * plaintextOffset.
@@ -140,4 +144,19 @@ public interface CipherState extends Destroyable {
 	 * @return A new CipherState of the same class as this one.
 	 */
 	CipherState fork(byte[] key, int offset);
+	
+	/**
+	 * Sets the nonce value.
+	 * 
+	 * @param nonce The new nonce value, which must be greater than or equal
+	 * to the current value.
+	 * 
+	 * @throws IllegalArgumentException The nonce is less than the current value.
+	 * 
+	 * Note that in this implementation, nonces are 63-bit quantities.
+	 * The Noise specification normally allows for 64-bit nonces.
+	 * 
+	 * Thie function is intended for testing purposes only.
+	 */
+	void setNonce(long nonce);
 }

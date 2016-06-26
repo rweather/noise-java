@@ -147,6 +147,8 @@ class AESGCMCipherState implements CipherState {
 		}
 		if (space < 16 || length > (space - 16))
 			throw new ShortBufferException();
+		if (n < 0)
+			throw new IllegalStateException("Nonce has wrapped around");
 		try {
 			cipher.init(Cipher.ENCRYPT_MODE, keySpec, createGCMParams());
 		} catch (InvalidKeyException e) {
@@ -180,6 +182,8 @@ class AESGCMCipherState implements CipherState {
 			space = plaintext.length - plaintextOffset;
 		if (length > space)
 			throw new ShortBufferException();
+		if (n < 0)
+			throw new IllegalStateException("Nonce has wrapped around");
 		if (keySpec == null) {
 			// The key is not set yet - return the ciphertext as-is.
 			if (plaintext != ciphertext || plaintextOffset != ciphertextOffset)
@@ -221,5 +225,12 @@ class AESGCMCipherState implements CipherState {
 		}
 		cipher.initializeKey(key, offset);
 		return cipher;
+	}
+
+	@Override
+	public void setNonce(long nonce) {
+		if (nonce < n)
+			throw new IllegalArgumentException("Nonce values cannot go backwards");
+		n = nonce;
 	}
 }

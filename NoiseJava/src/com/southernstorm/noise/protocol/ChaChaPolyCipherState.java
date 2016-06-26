@@ -136,6 +136,8 @@ class ChaChaPolyCipherState implements CipherState {
 	 */
 	private void setup(byte[] ad)
 	{
+		if (n < 0)
+			throw new IllegalStateException("Nonce has wrapped around");
 		ChaChaCore.initIV(input, n++);
 		ChaChaCore.hash(output, input);
 		Arrays.fill(polyKey, (byte)0);
@@ -228,6 +230,7 @@ class ChaChaPolyCipherState implements CipherState {
 			throw new ShortBufferException();
 		setup(ad);
 		encrypt(plaintext, plaintextOffset, ciphertext, ciphertextOffset, length);
+		poly.update(ciphertext, ciphertextOffset, length);
 		finish(ad, length);
 		System.arraycopy(polyKey, 0, ciphertext, ciphertextOffset + length, 16);
 		return length + 16;
@@ -238,21 +241,29 @@ class ChaChaPolyCipherState implements CipherState {
 			int ciphertextOffset, byte[] plaintext, int plaintextOffset,
 			int length) throws ShortBufferException, AEADBadTagException {
 		int space;
+		if (ciphertextOffset > ciphertext.length)
+			space = 0;
+		else
+			space = ciphertext.length - ciphertextOffset;
+		if (length > space)
+			throw new ShortBufferException();
 		if (plaintextOffset > plaintext.length)
 			space = 0;
 		else
 			space = plaintext.length - plaintextOffset;
-		if (length > space)
-			throw new ShortBufferException();
 		if (!haskey) {
 			// The key is not set yet - return the ciphertext as-is.
+			if (length > space)
+				throw new ShortBufferException();
 			if (plaintext != ciphertext || plaintextOffset != ciphertextOffset)
 				System.arraycopy(ciphertext, ciphertextOffset, plaintext, plaintextOffset, length);
 			return length;
 		}
 		if (length < 16)
 			throw new AEADBadTagException();
-		int dataLen = length = 16;
+		int dataLen = length - 16;
+		if (dataLen > space)
+			throw new ShortBufferException();
 		setup(ad);
 		poly.update(ciphertext, ciphertextOffset, dataLen);
 		finish(ad, dataLen);
@@ -270,5 +281,12 @@ class ChaChaPolyCipherState implements CipherState {
 		CipherState cipher = new ChaChaPolyCipherState();
 		cipher.initializeKey(key, offset);
 		return cipher;
+	}
+
+	@Override
+	public void setNonce(long nonce) {
+		if (nonce < n)
+			throw new IllegalArgumentException("Nonce values cannot go backwards");
+		n = nonce;
 	}
 }
