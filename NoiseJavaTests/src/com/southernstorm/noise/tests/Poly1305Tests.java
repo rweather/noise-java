@@ -47,7 +47,7 @@ public class Poly1305Tests {
 		poly.reset(keyBytes, 0);
 		poly.update(dataBytes, 0, dataBytes.length);
 		poly.finish(token, 0);
-		assertTrue(Arrays.equals(token,  hashBytes));
+		assertArrayEquals(hashBytes, token);
 		
 		// Break the data up into chunks to test multiple calls to update().
 		Arrays.fill(token, (byte)0xDD);
@@ -55,7 +55,7 @@ public class Poly1305Tests {
 		poly.update(dataBytes, 0, dataBytes.length / 2);
 		poly.update(dataBytes, dataBytes.length / 2, dataBytes.length - (dataBytes.length / 2));
 		poly.finish(token, 0);
-		assertTrue(Arrays.equals(token,  hashBytes));
+		assertArrayEquals(hashBytes, token);
 	}
 
 	@Test

@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -52,7 +51,7 @@ public class HashTests {
 		} catch (DigestException e) {
 			fail("digest failed");
 		}
-		assertTrue(Arrays.equals(result,  hashBytes));
+		assertArrayEquals(hashBytes, result);
 
 		// Hash the input in pieces to test split requests.
 		digest.reset();
@@ -63,7 +62,7 @@ public class HashTests {
 		} catch (DigestException e) {
 			fail("digest failed");
 		}
-		assertTrue(Arrays.equals(result,  hashBytes));
+		assertArrayEquals(hashBytes, result);
 	}
 
 	@Test
