@@ -23,7 +23,6 @@
 package com.southernstorm.noise.tests;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -49,18 +48,19 @@ public class CipherStateTests {
 		byte[] keyBytes = TestUtils.stringToData(key);
 		byte[] adBytes = TestUtils.stringToData(ad);
 		byte[] plaintextBytes = TestUtils.stringToData(plaintext);
-		byte[] ciphertextBytes = TestUtils.stringToData(ciphertext + mac.substring(2));
+		byte[] ciphertextBytes;
 		byte[] buffer;
+		if (ciphertext.length() > 0)
+			ciphertextBytes = TestUtils.stringToData(ciphertext + mac.substring(2));
+		else
+			ciphertextBytes = TestUtils.stringToData(mac);
 
 		// Create the cipher object and check its properties.
 		CipherState cipher = null;
 		try {
 			cipher = Noise.createCipher(name);
 		} catch (NoSuchAlgorithmException e) {
-			// FIXME: AES/GCM/NoPadding not supported in JavaSE-1.7.
-			// Remove this once we have a suitable replacement.
-			assumeNoException(e);
-			//fail(name + " cipher is not supported");
+			fail(name + " cipher is not supported");
 		}
 		assertEquals(name, cipher.getCipherName());
 		assertEquals(keyLen, cipher.getKeyLength());

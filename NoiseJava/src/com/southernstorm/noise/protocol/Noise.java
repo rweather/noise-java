@@ -83,10 +83,22 @@ public final class Noise {
 	 */
 	public static CipherState createCipher(String name) throws NoSuchAlgorithmException
 	{
-		if (name.equals("AESGCM"))
-			return new AESGCMCipherState();
-		else if (name.equals("ChaChaPoly"))
+		if (name.equals("AESGCM")) {
+			try {
+				return new AESGCMCipherState();
+			} catch (NoSuchAlgorithmException e) {
+				// The JCA/JCE does not have "AES/GCM/NoPadding" so try
+				// emulating it on top of "AES/CTR/NoPadding" instead.
+				try {
+					return new AESGCMOnCtrCipherState();
+				} catch (NoSuchAlgorithmException e1) {
+					// Re-throw the original "GCM not found" exception".
+					throw e;
+				}
+			}
+		} else if (name.equals("ChaChaPoly")) {
 			return new ChaChaPolyCipherState();
+		}
 		throw new NoSuchAlgorithmException("Unknown Noise cipher algorithm name: " + name);
 	}
 	
