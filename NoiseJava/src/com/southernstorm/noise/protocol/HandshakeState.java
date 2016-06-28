@@ -413,7 +413,10 @@ public class HandshakeState implements Destroyable {
 	 * "XXfallback" handshake pattern without first calling fallback() on a
 	 * previous "IK" handshake.
 	 * 
-	 * @see getAction(), writeMessage(), readMessage(), fallback()
+	 * @see #getAction()
+	 * @see #writeMessage(byte[], int, byte[], int, int)
+	 * @see #readMessage(byte[], int, int, byte[], int)
+	 * @see #fallback()
 	 */
 	public void start()
 	{
@@ -506,7 +509,7 @@ public class HandshakeState implements Destroyable {
 	 * @throws NoSuchAlgorithmException One of the cryptographic algorithms
 	 * that is specified in the new protocolName is not supported.
 	 * 
-	 * @see start()
+	 * @see #start()
 	 */
 	public void fallback() throws NoSuchAlgorithmException
 	{
@@ -611,7 +614,8 @@ public class HandshakeState implements Destroyable {
 	 * @throws ShortBufferException The message buffer does not have
 	 * enough space for the handshake message. 
 	 * 
-	 * @see getAction(), readMessage()
+	 * @see #getAction()
+	 * @see #readMessage(byte[], int, int, byte[], int)
 	 */
 	public int writeMessage(byte[] message, int messageOffset, byte[] payload, int payloadOffset, int payloadLength) throws ShortBufferException
 	{
@@ -762,6 +766,9 @@ public class HandshakeState implements Destroyable {
 	 * 
 	 * @throws AEADBadTagException A MAC value in the message failed
 	 * to verify.
+	 * 
+	 * @see #getAction()
+	 * @see #writeMessage(byte[], int, byte[], int, int)
 	 */
 	public int readMessage(byte[] message, int messageOffset, int messageLength, byte[] payload, int payloadOffset) throws ShortBufferException, AEADBadTagException
 	{

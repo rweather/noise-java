@@ -66,7 +66,7 @@ public interface CipherState extends Destroyable {
 	 * The key buffer must contain at least getKeyLength() bytes
 	 * starting at offset.
 	 * 
-	 * @see hasKey()
+	 * @see #hasKey()
 	 */
 	void initializeKey(byte[] key, int offset);
 
@@ -76,7 +76,7 @@ public interface CipherState extends Destroyable {
 	 * @return true if this cipher object has a key; false if the
 	 * key has not yet been set with initializeKey().
 	 * 
-	 * @see initializeKey()
+	 * @see #initializeKey(byte[], int)
 	 */
 	boolean hasKey();
 	

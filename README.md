@@ -29,8 +29,8 @@ If you have better implementations of the cryptographic primitives
 available, you can modify the createDH(), createCipher(), and
 createHash() functions in the "Noise" class to integrate your versions.
 
-The [documentation](http://rweather.github.com/noise-java/index.html)
-contains more information on the library, examples, and how to build it.
+The [package documentation](http://rweather.github.com/noise-java/index.html)
+contains more information on the classes in the Noise-Java library.
 
 For more information on this library, to report bugs, to contribute,
 or to suggest improvements, please contact the author Rhys Weatherley via
