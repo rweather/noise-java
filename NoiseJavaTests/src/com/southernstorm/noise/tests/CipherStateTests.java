@@ -82,7 +82,9 @@ public class CipherStateTests {
 		Arrays.fill(buffer, (byte)0xAA);
 		try {
 			assertEquals(ciphertextBytes.length, cipher.decryptWithAd(adBytes, ciphertextBytes, 0, buffer, 0, ciphertextBytes.length));
-		} catch (AEADBadTagException | ShortBufferException e) {
+		} catch (AEADBadTagException e) {
+			fail();
+		} catch (ShortBufferException e) {
 			fail();
 		}
 
@@ -140,7 +142,9 @@ public class CipherStateTests {
 			Arrays.fill(buffer, (byte)0xAA);
 			assertEquals(plaintextBytes.length, cipher.decryptWithAd(adBytes, ciphertextBytes, 0, buffer, 0, ciphertextBytes.length));
 			assertArrayEquals(plaintextBytes, buffer);
-		} catch (AEADBadTagException | ShortBufferException e) {
+		} catch (AEADBadTagException e) {
+			fail();
+		} catch (ShortBufferException e) {
 			fail();
 		}
 

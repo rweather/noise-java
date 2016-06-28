@@ -119,14 +119,23 @@ class AESGCMOnCtrCipherState implements CipherState {
 		Arrays.fill(hashKey, (byte)0);
 		try {
 			cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
-		} catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
+		} catch (InvalidKeyException e) {
+			// Shouldn't happen.
+			throw new IllegalStateException(e);
+		} catch (InvalidAlgorithmParameterException e) {
 			// Shouldn't happen.
 			throw new IllegalStateException(e);
 		}
 		try {
 			int result = cipher.update(hashKey, 0, 16, hashKey, 0);
 			cipher.doFinal(hashKey, result);
-		} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException e) {
+		} catch (ShortBufferException e) {
+			// Shouldn't happen.
+			throw new IllegalStateException(e);
+		} catch (IllegalBlockSizeException e) {
+			// Shouldn't happen.
+			throw new IllegalStateException(e);
+		} catch (BadPaddingException e) {
 			// Shouldn't happen.
 			throw new IllegalStateException(e);
 		}
@@ -215,7 +224,16 @@ class AESGCMOnCtrCipherState implements CipherState {
 			setup(ad);
 			int result = cipher.update(plaintext, plaintextOffset, length, ciphertext, ciphertextOffset);
 			cipher.doFinal(ciphertext, ciphertextOffset + result);
-		} catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
+		} catch (InvalidKeyException e) {
+			// Shouldn't happen.
+			throw new IllegalStateException(e);
+		} catch (InvalidAlgorithmParameterException e) {
+			// Shouldn't happen.
+			throw new IllegalStateException(e);
+		} catch (IllegalBlockSizeException e) {
+			// Shouldn't happen.
+			throw new IllegalStateException(e);
+		} catch (BadPaddingException e) {
 			// Shouldn't happen.
 			throw new IllegalStateException(e);
 		}
@@ -257,7 +275,10 @@ class AESGCMOnCtrCipherState implements CipherState {
 			throw new ShortBufferException();
 		try {
 			setup(ad);
-		} catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
+		} catch (InvalidKeyException e) {
+			// Shouldn't happen.
+			throw new IllegalStateException(e);
+		} catch (InvalidAlgorithmParameterException e) {
 			// Shouldn't happen.
 			throw new IllegalStateException(e);
 		}
@@ -272,7 +293,10 @@ class AESGCMOnCtrCipherState implements CipherState {
 		try {
 			int result = cipher.update(ciphertext, ciphertextOffset, dataLen, plaintext, plaintextOffset);
 			cipher.doFinal(plaintext, plaintextOffset + result);
-		} catch (IllegalBlockSizeException | BadPaddingException e) {
+		} catch (IllegalBlockSizeException e) {
+			// Shouldn't happen.
+			throw new IllegalStateException(e);
+		} catch (BadPaddingException e) {
 			// Shouldn't happen.
 			throw new IllegalStateException(e);
 		}
