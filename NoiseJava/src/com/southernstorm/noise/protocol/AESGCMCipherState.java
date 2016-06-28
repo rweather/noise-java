@@ -22,16 +22,17 @@
 
 package com.southernstorm.noise.protocol;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
-import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -43,6 +44,7 @@ class AESGCMCipherState implements CipherState {
 	private SecretKeySpec keySpec;
 	private long n;
 	private byte[] nf;
+	private Class<?> gcmClass;
 
 	/**
 	 * Constructs a new cipher state for the "AESGCM" algorithm.
@@ -61,6 +63,11 @@ class AESGCMCipherState implements CipherState {
 		keySpec = null;
 		n = 0;
 		nf = new byte [12];
+		try {
+			gcmClass = Class.forName("javax.crypto.spec.GCMParameterSpec");
+		} catch (ClassNotFoundException e) {
+			gcmClass = null;
+		}
 	}
 
 	@Override
@@ -69,9 +76,9 @@ class AESGCMCipherState implements CipherState {
 		// So we instead set the key and IV to all-zeroes to hopefully
 		// destroy the sensitive data in the cipher instances.
 		keySpec = new SecretKeySpec(new byte [32], "AES");
-		GCMParameterSpec params = new GCMParameterSpec(128, new byte [12]);
+		n = 0;
 		try {
-			cipher.init(Cipher.ENCRYPT_MODE, keySpec, params);
+			cipher.init(Cipher.ENCRYPT_MODE, keySpec, createGCMParams());
 		} catch (InvalidKeyException e) {
 			// Shouldn't happen.
 		} catch (InvalidAlgorithmParameterException e) {
@@ -99,7 +106,7 @@ class AESGCMCipherState implements CipherState {
 	 * 
 	 * @return The GCM parameters for the current nonce.
 	 */
-	private GCMParameterSpec createGCMParams()
+	private AlgorithmParameterSpec createGCMParams()
 	{
 		nf[0] = (byte)0;
 		nf[1] = (byte)0;
@@ -114,7 +121,21 @@ class AESGCMCipherState implements CipherState {
 		nf[10] = (byte)(n >> 8);
 		nf[11] = (byte)n;
 		++n;
-		return new GCMParameterSpec(128, nf);
+		if (gcmClass != null) {
+			// Equivalent of "return new GCMParameterSpec(128, nf)" without
+			// linking against GCMParameterSpec at compile time, which doesn't
+			// exist in older JDK's.
+			try {
+				return (AlgorithmParameterSpec)gcmClass.getConstructor(int.class, byte[].class).newInstance(128, nf);
+			} catch (NoSuchMethodException e) {
+			} catch (SecurityException e) {
+			} catch (InstantiationException e) {
+			} catch (IllegalAccessException e) {
+			} catch (IllegalArgumentException e) {
+			} catch (InvocationTargetException e) {
+			}
+		}
+		return null;
 	}
 
 	@Override

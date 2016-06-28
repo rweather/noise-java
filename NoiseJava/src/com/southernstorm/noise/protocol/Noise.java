@@ -188,7 +188,7 @@ public final class Noise {
 	static void throwBadTagException() throws BadPaddingException
 	{
 		try {
-			Class c = Class.forName("javax.crypto.AEADBadTagException");
+			Class<?> c = Class.forName("javax.crypto.AEADBadTagException");
 			throw (BadPaddingException)(c.newInstance());
 		} catch (ClassNotFoundException e) {
 		} catch (InstantiationException e) {
