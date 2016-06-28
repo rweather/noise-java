@@ -34,13 +34,14 @@ import javax.crypto.ShortBufferException;
 /**
  * Symmetric state for helping manage a Noise handshake.
  */
-public class SymmetricState implements Destroyable {
+class SymmetricState implements Destroyable {
 	
 	private String name;
 	private CipherState cipher;
 	private MessageDigest hash;
 	private byte[] ck;
 	private byte[] h;
+	private byte[] prev_h;
 
 	/**
 	 * Constructs a new symmetric state object.
@@ -57,10 +58,10 @@ public class SymmetricState implements Destroyable {
 		name = protocolName;
 		cipher = Noise.createCipher(cipherName);
 		hash = Noise.createHash(hashName);
-		int keyLength = cipher.getKeyLength();
-		ck = new byte [keyLength];
 		int hashLength = hash.getDigestLength();
+		ck = new byte [hashLength];
 		h = new byte [hashLength];
+		prev_h = new byte [hashLength];
 		
 		byte[] protocolNameBytes;
 		try {
@@ -77,7 +78,7 @@ public class SymmetricState implements Destroyable {
 			hashOne(protocolNameBytes, 0, protocolNameBytes.length, h, 0, h.length);
 		}
 		
-		System.arraycopy(h, 0, ck, 0, keyLength);
+		System.arraycopy(h, 0, ck, 0, hashLength);
 	}
 
 	/**
@@ -218,8 +219,9 @@ public class SymmetricState implements Destroyable {
 	 */
 	public int decryptAndHash(byte[] ciphertext, int ciphertextOffset, byte[] plaintext, int plaintextOffset, int length) throws ShortBufferException, AEADBadTagException
 	{
+		System.arraycopy(h, 0, prev_h, 0, h.length);
 		mixHash(ciphertext, ciphertextOffset, length);
-		return cipher.decryptWithAd(h, ciphertext, ciphertextOffset, plaintext, plaintextOffset, length);
+		return cipher.decryptWithAd(prev_h, ciphertext, ciphertextOffset, plaintext, plaintextOffset, length);
 	}
 
 	/**
@@ -314,6 +316,10 @@ public class SymmetricState implements Destroyable {
 			Noise.destroy(h);
 			h = null;
 		}
+		if (prev_h != null) {
+			Noise.destroy(prev_h);
+			prev_h = null;
+		}
 	}
 
 	/**
@@ -406,7 +412,7 @@ public class SymmetricState implements Destroyable {
 			hash.reset();
 			hash.update(block, 0, blockLength);
 			hash.update(data, dataOffset, dataLength);
-			hash.digest(output, outputOffset, outputLength);
+			hash.digest(output, outputOffset, hashLength);
 			for (index = 0; index < blockLength; ++index)
 				block[index] ^= (byte)(0x36 ^ 0x5C);
 			hash.reset();

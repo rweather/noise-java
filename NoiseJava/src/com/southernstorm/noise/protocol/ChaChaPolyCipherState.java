@@ -270,7 +270,7 @@ class ChaChaPolyCipherState implements CipherState {
 		int temp = 0;
 		for (int index = 0; index < 16; ++index)
 			temp |= (polyKey[index] ^ ciphertext[ciphertextOffset + dataLen + index]);
-		if (temp != 0)
+		if ((temp & 0xFF) != 0)
 			throw new AEADBadTagException();
 		encrypt(ciphertext, ciphertextOffset, plaintext, plaintextOffset, dataLen);
 		return dataLen;

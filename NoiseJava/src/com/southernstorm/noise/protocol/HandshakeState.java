@@ -437,7 +437,7 @@ public class HandshakeState implements Destroyable {
 				throw new IllegalStateException("Remote static key required");
 		}
 		if ((requirements & PSK_REQUIRED) != 0) {
-			if (preSharedKey != null)
+			if (preSharedKey == null)
 				throw new IllegalStateException("Pre-shared key required");
 		}
 		
@@ -468,7 +468,7 @@ public class HandshakeState implements Destroyable {
 				symmetric.mixPublicKey(localEphemeral);
 		}
 		
-		// The handshake has official started - set the first action.
+		// The handshake has officially started - set the first action.
 		if (isInitiator)
 			action = WRITE_MESSAGE;
 		else
@@ -552,7 +552,7 @@ public class HandshakeState implements Destroyable {
 			// Reverse the pattern flags so that the responder is "local".
 			flags = Pattern.reverseFlags(flags);
 		}
-		requirements = computeRequirements(flags, components[0], isInitiator ? INITIATOR : RESPONDER, false);
+		requirements = computeRequirements(flags, components[0], isInitiator ? INITIATOR : RESPONDER, true);
 	}
 
 	/**
@@ -952,14 +952,11 @@ public class HandshakeState implements Destroyable {
 	 * 
 	 * @return The handshake hash.  This must not be modified by the caller.
 	 * 
-	 * The handshake hash value is only of use to the application after
-	 * split() has been called.
-	 * 
-	 * @throws IllegalStateException The action is not COMPLETE.
+	 * @throws IllegalStateException The action is not SPLIT or COMPLETE.
 	 */
 	public byte[] getHandshakeHash()
 	{
-		if (action != COMPLETE) {
+		if (action != SPLIT && action != COMPLETE) {
 			throw new IllegalStateException
 				("Handshake has not completed");
 		}

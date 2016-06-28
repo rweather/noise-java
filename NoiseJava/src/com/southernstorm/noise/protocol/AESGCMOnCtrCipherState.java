@@ -267,7 +267,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 		int temp = 0;
 		for (int index = 0; index < 16; ++index)
 			temp |= (hashKey[index] ^ iv[index] ^ ciphertext[ciphertextOffset + dataLen + index]);
-		if (temp != 0)
+		if ((temp & 0xFF) != 0)
 			throw new AEADBadTagException();
 		try {
 			int result = cipher.update(ciphertext, ciphertextOffset, dataLen, plaintext, plaintextOffset);

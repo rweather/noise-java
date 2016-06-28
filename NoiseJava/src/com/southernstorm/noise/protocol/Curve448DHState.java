@@ -96,7 +96,7 @@ class Curve448DHState implements DHState {
 
 	@Override
 	public void setPrivateKey(byte[] key, int offset) {
-		System.arraycopy(key, offset, publicKey, 0, 56);
+		System.arraycopy(key, offset, privateKey, 0, 56);
 		Curve448.eval(publicKey, 0, privateKey, null);
 		mode = 0x03;
 	}
