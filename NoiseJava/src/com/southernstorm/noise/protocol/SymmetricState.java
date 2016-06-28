@@ -28,7 +28,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 
 /**
@@ -211,13 +211,13 @@ class SymmetricState implements Destroyable {
 	 * @throws ShortBufferException There is not enough space in the plaintext
 	 * buffer for the decrypted data.
 	 * 
-	 * @throws AEADBadTagException The MAC value failed to verify.
+	 * @throws BadPaddingException The MAC value failed to verify.
 	 * 
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * decryption.  In that case, ciphertextOffset must be identical to
 	 * plaintextOffset.
 	 */
-	public int decryptAndHash(byte[] ciphertext, int ciphertextOffset, byte[] plaintext, int plaintextOffset, int length) throws ShortBufferException, AEADBadTagException
+	public int decryptAndHash(byte[] ciphertext, int ciphertextOffset, byte[] plaintext, int plaintextOffset, int length) throws ShortBufferException, BadPaddingException
 	{
 		System.arraycopy(h, 0, prev_h, 0, h.length);
 		mixHash(ciphertext, ciphertextOffset, length);

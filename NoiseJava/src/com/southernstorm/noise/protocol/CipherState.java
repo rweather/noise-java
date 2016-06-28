@@ -22,7 +22,7 @@
 
 package com.southernstorm.noise.protocol;
 
-import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 
 /**
@@ -126,7 +126,7 @@ public interface CipherState extends Destroyable {
 	 * @throws ShortBufferException The plaintext buffer does not have
 	 * enough space to store the decrypted data.
 	 * 
-	 * @throws AEADBadTagException The MAC value failed to verify.
+	 * @throws BadPaddingException The MAC value failed to verify.
 	 * 
 	 * @throws IllegalStateException The nonce has wrapped around.
 	 * 
@@ -134,7 +134,7 @@ public interface CipherState extends Destroyable {
 	 * decryption.  In that case, ciphertextOffset must be identical to
 	 * plaintextOffset.
 	 */
-	int decryptWithAd(byte[] ad, byte[] ciphertext, int ciphertextOffset, byte[] plaintext, int plaintextOffset, int length) throws ShortBufferException, AEADBadTagException;
+	int decryptWithAd(byte[] ad, byte[] ciphertext, int ciphertextOffset, byte[] plaintext, int plaintextOffset, int length) throws ShortBufferException, BadPaddingException;
 
 	/**
 	 * Creates a new instance of this cipher and initializes it with a key.

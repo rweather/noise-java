@@ -27,7 +27,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -248,7 +247,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 	@Override
 	public int decryptWithAd(byte[] ad, byte[] ciphertext,
 			int ciphertextOffset, byte[] plaintext, int plaintextOffset,
-			int length) throws ShortBufferException, AEADBadTagException {
+			int length) throws ShortBufferException, BadPaddingException {
 		int space;
 		if (ciphertextOffset > ciphertext.length)
 			space = 0;
@@ -269,7 +268,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 			return length;
 		}
 		if (length < 16)
-			throw new AEADBadTagException();
+			Noise.throwBadTagException();
 		int dataLen = length - 16;
 		if (dataLen > space)
 			throw new ShortBufferException();
@@ -289,7 +288,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 		for (int index = 0; index < 16; ++index)
 			temp |= (hashKey[index] ^ iv[index] ^ ciphertext[ciphertextOffset + dataLen + index]);
 		if ((temp & 0xFF) != 0)
-			throw new AEADBadTagException();
+			Noise.throwBadTagException();
 		try {
 			int result = cipher.update(ciphertext, ciphertextOffset, dataLen, plaintext, plaintextOffset);
 			cipher.doFinal(plaintext, plaintextOffset + result);

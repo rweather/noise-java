@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.NoSuchAlgorithmException;
 
-import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 import javax.xml.bind.DatatypeConverter;
 
@@ -120,7 +120,7 @@ public class VectorTests {
 	 * @param initiator Handshake object for the initiator.
 	 * @param responder Handshake object for the responder.
 	 */
-	private void runTest(TestVector vec, HandshakeState initiator, HandshakeState responder) throws ShortBufferException, AEADBadTagException, NoSuchAlgorithmException
+	private void runTest(TestVector vec, HandshakeState initiator, HandshakeState responder) throws ShortBufferException, BadPaddingException, NoSuchAlgorithmException
 	{
 		// Set all keys and special values that we need.
 		if (vec.init_prologue != null)
@@ -192,7 +192,7 @@ public class VectorTests {
 				try {
 					recv.readMessage(message, 0, len, plaintext, 0);
 					fail("read should have triggered fallback");
-				} catch (AEADBadTagException e) {
+				} catch (BadPaddingException e) {
 					// Success!
 				}
 				

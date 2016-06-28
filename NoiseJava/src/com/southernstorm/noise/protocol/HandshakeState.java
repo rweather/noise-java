@@ -25,7 +25,7 @@ package com.southernstorm.noise.protocol;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 
 /**
@@ -764,13 +764,13 @@ public class HandshakeState implements Destroyable {
 	 * sufficient bytes for a valid message or the payload buffer does
 	 * not have enough space for the decrypted payload. 
 	 * 
-	 * @throws AEADBadTagException A MAC value in the message failed
+	 * @throws BadPaddingException A MAC value in the message failed
 	 * to verify.
 	 * 
 	 * @see #getAction()
 	 * @see #writeMessage(byte[], int, byte[], int, int)
 	 */
-	public int readMessage(byte[] message, int messageOffset, int messageLength, byte[] payload, int payloadOffset) throws ShortBufferException, AEADBadTagException
+	public int readMessage(byte[] message, int messageOffset, int messageLength, byte[] payload, int payloadOffset) throws ShortBufferException, BadPaddingException
 	{
 		boolean success = false;
 		int messageEnd = messageOffset + messageLength;
@@ -821,7 +821,7 @@ public class HandshakeState implements Destroyable {
 			                // not contributing anything to the security of the session
 			                // and is in fact downgrading the security to "none at all"
 			                // in some of the message patterns.  Reject all such keys.
-							throw new AEADBadTagException("Null remote public key");
+							throw new BadPaddingException("Null remote public key");
 						}
 
 						// If the protocol is using pre-shared keys, then also mix

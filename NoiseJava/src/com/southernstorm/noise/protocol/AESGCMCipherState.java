@@ -26,7 +26,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -174,7 +173,7 @@ class AESGCMCipherState implements CipherState {
 	@Override
 	public int decryptWithAd(byte[] ad, byte[] ciphertext,
 			int ciphertextOffset, byte[] plaintext, int plaintextOffset,
-			int length) throws ShortBufferException, AEADBadTagException {
+			int length) throws ShortBufferException, BadPaddingException {
 		int space;
 		if (ciphertextOffset > ciphertext.length)
 			space = 0;
@@ -193,7 +192,7 @@ class AESGCMCipherState implements CipherState {
 			return length;
 		}
 		if (length < 16)
-			throw new AEADBadTagException();
+			Noise.throwBadTagException();
 		int dataLen = length - 16;
 		if (dataLen > space)
 			throw new ShortBufferException();
@@ -203,10 +202,10 @@ class AESGCMCipherState implements CipherState {
 			cipher.init(Cipher.DECRYPT_MODE, keySpec, createGCMParams());
 		} catch (InvalidKeyException e) {
 			// Shouldn't happen.
-			throw new AEADBadTagException();
+			Noise.throwBadTagException();
 		} catch (InvalidAlgorithmParameterException e) {
 			// Shouldn't happen.
-			throw new AEADBadTagException();
+			Noise.throwBadTagException();
 		}
 		if (ad != null)
 			cipher.updateAAD(ad);
@@ -215,11 +214,8 @@ class AESGCMCipherState implements CipherState {
 			result += cipher.doFinal(plaintext, plaintextOffset + result);
 			return result;
 		} catch (IllegalBlockSizeException e) {
-			throw new AEADBadTagException();
-		} catch (AEADBadTagException e) {
-			throw e;
-		} catch (BadPaddingException e) {
-			throw new AEADBadTagException();
+			Noise.throwBadTagException();
+			return -1;
 		}
 	}
 

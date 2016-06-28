@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 
 import org.junit.Test;
@@ -82,7 +82,7 @@ public class CipherStateTests {
 		Arrays.fill(buffer, (byte)0xAA);
 		try {
 			assertEquals(ciphertextBytes.length, cipher.decryptWithAd(adBytes, ciphertextBytes, 0, buffer, 0, ciphertextBytes.length));
-		} catch (AEADBadTagException e) {
+		} catch (BadPaddingException e) {
 			fail();
 		} catch (ShortBufferException e) {
 			fail();
@@ -108,7 +108,7 @@ public class CipherStateTests {
 		try {
 			cipher.decryptWithAd(adBytes, ciphertextBytes, 0, buffer, 0, ciphertextBytes.length);
 			fail();
-		} catch (AEADBadTagException e) {
+		} catch (BadPaddingException e) {
 			// Success!
 		} catch (ShortBufferException e) {
 			fail();
@@ -142,7 +142,7 @@ public class CipherStateTests {
 			Arrays.fill(buffer, (byte)0xAA);
 			assertEquals(plaintextBytes.length, cipher.decryptWithAd(adBytes, ciphertextBytes, 0, buffer, 0, ciphertextBytes.length));
 			assertArrayEquals(plaintextBytes, buffer);
-		} catch (AEADBadTagException e) {
+		} catch (BadPaddingException e) {
 			fail();
 		} catch (ShortBufferException e) {
 			fail();
@@ -157,7 +157,7 @@ public class CipherStateTests {
 			try {
 				cipher.decryptWithAd(adBytes, ciphertextBytes, 0, buffer, 0, ciphertextBytes.length);
 				fail();
-			} catch (AEADBadTagException e) {
+			} catch (BadPaddingException e) {
 				// Success!
 			}
 			try {
@@ -165,7 +165,7 @@ public class CipherStateTests {
 				fail();
 			} catch (IllegalStateException e) {
 				// Success!
-			} catch (AEADBadTagException e) {
+			} catch (BadPaddingException e) {
 				fail();
 			}
 		} catch (ShortBufferException e) {

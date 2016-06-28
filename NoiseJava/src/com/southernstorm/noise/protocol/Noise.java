@@ -27,6 +27,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
+import javax.crypto.BadPaddingException;
+
 import com.southernstorm.noise.crypto.Blake2bMessageDigest;
 import com.southernstorm.noise.crypto.Blake2sMessageDigest;
 
@@ -172,5 +174,26 @@ public final class Noise {
 		byte[] copy = new byte [length];
 		System.arraycopy(data, offset, copy, 0, length);
 		return copy;
+	}
+	
+	/**
+	 * Throws an instance of AEADBadTagException.
+	 * 
+	 * @throws BadPaddingException The AEAD exception.
+	 * 
+	 * If the underlying JDK does not have the AEADBadTagException
+	 * class, then this function will instead throw an instance of
+	 * the superclass BadPaddingException.
+	 */
+	static void throwBadTagException() throws BadPaddingException
+	{
+		try {
+			Class c = Class.forName("javax.crypto.AEADBadTagException");
+			throw (BadPaddingException)(c.newInstance());
+		} catch (ClassNotFoundException e) {
+		} catch (InstantiationException e) {
+		} catch (IllegalAccessException e) {
+		}
+		throw new BadPaddingException();
 	}
 }
