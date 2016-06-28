@@ -72,6 +72,19 @@ class AESGCMOnCtrCipherState implements CipherState {
 		iv = new byte [16];
 		hashKey = new byte [16];
 		ghash = new GHASH();
+		
+		// Try to set a 256-bit key on the cipher.  Some JCE's are
+		// configured to disallow 256-bit AES if an extra policy
+		// file has not been installed.
+		try {
+			SecretKeySpec spec = new SecretKeySpec(new byte [32], "AES");
+			IvParameterSpec params = new IvParameterSpec(iv);
+			cipher.init(Cipher.ENCRYPT_MODE, spec, params);
+		} catch (InvalidKeyException e) {
+			throw new NoSuchAlgorithmException("AES/CTR/NoPadding does not support 256-bit keys", e);
+		} catch (InvalidAlgorithmParameterException e) {
+			throw new NoSuchAlgorithmException("AES/CTR/NoPadding does not support 256-bit keys", e);
+		}
 	}
 
 	@Override
