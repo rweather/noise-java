@@ -17,7 +17,6 @@ Noise-Java will try to use them if present:
 
  * SHA-256
  * SHA-512
- * AES/GCM/NoPadding
  * AES/CTR/NoPadding
 
 Some JDK installations restrict the use of 256-bit AES keys.  You may need to

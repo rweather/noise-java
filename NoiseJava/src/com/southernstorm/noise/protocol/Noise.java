@@ -109,20 +109,16 @@ public final class Noise {
 		if (name.equals("AESGCM")) {
 			if (forceFallbacks)
 				return new AESGCMFallbackCipherState();
-			// AESGCMCipherState doesn't seem to work yet - FIXME.
-			//try {
-			//	return new AESGCMCipherState();
-			//} catch (NoSuchAlgorithmException e) {
-				// The JCA/JCE does not have "AES/GCM/NoPadding" so try
-				// emulating it on top of "AES/CTR/NoPadding" instead.
-				try {
-					return new AESGCMOnCtrCipherState();
-				} catch (NoSuchAlgorithmException e1) {
-					// Could not find anything useful in the JCA/JCE so
-					// use the pure Java fallback implementation instead.
-					return new AESGCMFallbackCipherState();
-				}
-			//}
+			// "AES/GCM/NoPadding" exists in some recent JDK's but it is flaky
+			// to use and not easily back-portable to older Android versions.
+			// We instead emulate AESGCM on top of "AES/CTR/NoPadding".
+			try {
+				return new AESGCMOnCtrCipherState();
+			} catch (NoSuchAlgorithmException e1) {
+				// Could not find anything useful in the JCA/JCE so
+				// use the pure Java fallback implementation instead.
+				return new AESGCMFallbackCipherState();
+			}
 		} else if (name.equals("ChaChaPoly")) {
 			return new ChaChaPolyCipherState();
 		}
