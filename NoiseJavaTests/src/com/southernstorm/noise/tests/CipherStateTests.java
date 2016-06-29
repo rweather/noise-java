@@ -43,7 +43,7 @@ public class CipherStateTests {
 	private void testCipher(String name, int keyLen, int macLen,
 							String key, long nonce, String ad,
 							String plaintext, String ciphertext,
-							String mac)
+							String mac, boolean forceFallbacks)
 	{
 		byte[] keyBytes = TestUtils.stringToData(key);
 		byte[] adBytes = TestUtils.stringToData(ad);
@@ -57,6 +57,7 @@ public class CipherStateTests {
 
 		// Create the cipher object and check its properties.
 		CipherState cipher = null;
+		Noise.setForceFallbacks(forceFallbacks);
 		try {
 			cipher = Noise.createCipher(name);
 		} catch (NoSuchAlgorithmException e) {
@@ -171,6 +172,15 @@ public class CipherStateTests {
 		} catch (ShortBufferException e) {
 			fail("Buffer should have been big enough");
 		}
+	}
+
+	private void testCipher(String name, int keyLen, int macLen,
+							String key, long nonce, String ad,
+							String plaintext, String ciphertext,
+							String mac)
+	{
+		testCipher(name, keyLen, macLen, key, nonce, ad, plaintext, ciphertext, mac, true);
+		testCipher(name, keyLen, macLen, key, nonce, ad, plaintext, ciphertext, mac, false);
 	}
 
 	@Test

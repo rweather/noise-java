@@ -56,6 +56,23 @@ public final class Noise {
 		random.nextBytes(data);
 	}
 
+	private static boolean forceFallbacks = false;
+	
+	/**
+	 * Force the use of plain Java fallback crypto implementations.
+	 * 
+	 * @param force Set to true for force fallbacks, false to
+	 * try to use the system implementation before falling back.
+	 * 
+	 * This function is intended for testing purposes to toggle between
+	 * the system JCA/JCE implementations and the plain Java fallback
+	 * reference implementations.
+	 */
+	public static void setForceFallbacks(boolean force)
+	{
+		forceFallbacks = force;
+	}
+
 	/**
 	 * Creates a Diffie-Hellman object from its Noise protocol name.
 	 * 
@@ -90,6 +107,8 @@ public final class Noise {
 	public static CipherState createCipher(String name) throws NoSuchAlgorithmException
 	{
 		if (name.equals("AESGCM")) {
+			if (forceFallbacks)
+				return new AESGCMFallbackCipherState();
 			// AESGCMCipherState doesn't seem to work yet - FIXME.
 			//try {
 			//	return new AESGCMCipherState();
@@ -128,12 +147,16 @@ public final class Noise {
 		// The only algorithm that is required to be implemented by a
 		// JDK is "SHA-256", although "SHA-512" is fairly common as well.
 		if (name.equals("SHA256")) {
+			if (forceFallbacks)
+				return new SHA256MessageDigest();
 			try {
 				return MessageDigest.getInstance("SHA-256");
 			} catch (NoSuchAlgorithmException e) {
 				return new SHA256MessageDigest();
 			}
 		} else if (name.equals("SHA512")) {
+			if (forceFallbacks)
+				return new SHA512MessageDigest();
 			try {
 				return MessageDigest.getInstance("SHA-512");
 			} catch (NoSuchAlgorithmException e) {
@@ -142,6 +165,8 @@ public final class Noise {
 		} else if (name.equals("BLAKE2b")) {
 			// Bouncy Castle registers the BLAKE2b variant we
 			// want under the name "BLAKE2B-512".
+			if (forceFallbacks)
+				return new Blake2bMessageDigest();
 			try {
 				return MessageDigest.getInstance("BLAKE2B-512");
 			} catch (NoSuchAlgorithmException e) {
@@ -151,6 +176,8 @@ public final class Noise {
 			// Bouncy Castle doesn't currently (June 2016) have an
 			// implementation of BLAKE2s, but look for the most
 			// obvious provider name in case one is added in the future.
+			if (forceFallbacks)
+				return new Blake2sMessageDigest();
 			try {
 				return MessageDigest.getInstance("BLAKE2S-256");
 			} catch (NoSuchAlgorithmException e) {
