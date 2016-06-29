@@ -88,18 +88,20 @@ public final class Noise {
 	public static CipherState createCipher(String name) throws NoSuchAlgorithmException
 	{
 		if (name.equals("AESGCM")) {
-			try {
-				return new AESGCMCipherState();
-			} catch (NoSuchAlgorithmException e) {
+			// AESGCMCipherState doesn't seem to work yet - FIXME.
+			//try {
+			//	return new AESGCMCipherState();
+			//} catch (NoSuchAlgorithmException e) {
 				// The JCA/JCE does not have "AES/GCM/NoPadding" so try
 				// emulating it on top of "AES/CTR/NoPadding" instead.
 				try {
 					return new AESGCMOnCtrCipherState();
 				} catch (NoSuchAlgorithmException e1) {
-					// Re-throw the original "GCM not found" exception".
-					throw e;
+					// Could not find anything useful in the JCA/JCE so
+					// use the pure Java fallback implementation instead.
+					return new AESGCMFallbackCipherState();
 				}
-			}
+			//}
 		} else if (name.equals("ChaChaPoly")) {
 			return new ChaChaPolyCipherState();
 		}
