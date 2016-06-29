@@ -9,21 +9,21 @@ terms of the MIT license.
 
 This library is written in plain Java, making use of the Java Cryptography
 Extension (JCE) to provide cryptographic primitives and infrastructure.
-Where a primitive is not normally present in standard JDK's, Noise-Java
-provides fallback implementations.  It is assumed that the platform JDK
-has the following providers built-in:
+When a primitive is not supported by the platform's JDK, Noise-Java provides
+a fallback implementation in plain Java.
+
+The following algorithms are commonly available in standard JDK's and
+Noise-Java will try to use them if present:
 
  * SHA-256
  * SHA-512
  * AES/GCM/NoPadding
+ * AES/CTR/NoPadding
 
-If AES/GCM/NoPadding is not available, then the Noise-Java library will
-emulate GCM on top of AES/CTR/NoPadding using a custom GHASH implementation.
-If CTR mode isn't available either, then the "AESGCM" cipher cannot be used.
-
-All other cryptographic primitives are emulated with plain Java
-reference implementations: ChaChaPoly, BLAKE2s, BLAKE2b, Curve25519,
-and Curve448.
+Some JDK installations restrict the use of 256-bit AES keys.  You may need to
+install the "Unlimited Strength Policy Files" for your JDK to get around this
+restriction.  Alternatively, the plain Java fallback implementation of AESGCM
+in Noise-Java does not have any such restrictions.
 
 If you have better implementations of the cryptographic primitives
 available, you can modify the createDH(), createCipher(), and
