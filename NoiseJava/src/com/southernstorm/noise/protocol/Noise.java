@@ -31,6 +31,8 @@ import javax.crypto.BadPaddingException;
 
 import com.southernstorm.noise.crypto.Blake2bMessageDigest;
 import com.southernstorm.noise.crypto.Blake2sMessageDigest;
+import com.southernstorm.noise.crypto.SHA256MessageDigest;
+import com.southernstorm.noise.crypto.SHA512MessageDigest;
 
 /**
  * Utility functions for the Noise protocol library.
@@ -121,13 +123,22 @@ public final class Noise {
 	 */
 	public static MessageDigest createHash(String name) throws NoSuchAlgorithmException
 	{
-		// The SHA-256 and SHA-512 names are fairly common in standard JDK's.
-		// For BLAKE2, we try to find a provider and if that doesn't work
-		// we use the fallback implementations in this library instead.
+		// Look for a JCA/JCE provider first and if that doesn't work,
+		// use the fallback implementations in this library instead.
+		// The only algorithm that is required to be implemented by a
+		// JDK is "SHA-256", although "SHA-512" is fairly common as well.
 		if (name.equals("SHA256")) {
-			return MessageDigest.getInstance("SHA-256");
+			try {
+				return MessageDigest.getInstance("SHA-256");
+			} catch (NoSuchAlgorithmException e) {
+				return new SHA256MessageDigest();
+			}
 		} else if (name.equals("SHA512")) {
-			return MessageDigest.getInstance("SHA-512");
+			try {
+				return MessageDigest.getInstance("SHA-512");
+			} catch (NoSuchAlgorithmException e) {
+				return new SHA512MessageDigest();
+			}
 		} else if (name.equals("BLAKE2b")) {
 			// Bouncy Castle registers the BLAKE2b variant we
 			// want under the name "BLAKE2B-512".
