@@ -458,17 +458,17 @@ public class HandshakeState implements Destroyable {
 		if (isInitiator) {
 			if ((requirements & LOCAL_PREMSG) != 0)
 				symmetric.mixPublicKey(localKeyPair);
-			if ((requirements & REMOTE_PREMSG) != 0)
-				symmetric.mixPublicKey(remotePublicKey);
 			if ((requirements & FALLBACK_PREMSG) != 0)
 				symmetric.mixPublicKey(remoteEphemeral);
+			if ((requirements & REMOTE_PREMSG) != 0)
+				symmetric.mixPublicKey(remotePublicKey);
 		} else {
 			if ((requirements & REMOTE_PREMSG) != 0)
 				symmetric.mixPublicKey(remotePublicKey);
-			if ((requirements & LOCAL_PREMSG) != 0)
-				symmetric.mixPublicKey(localKeyPair);
 			if ((requirements & FALLBACK_PREMSG) != 0)
 				symmetric.mixPublicKey(localEphemeral);
+			if ((requirements & LOCAL_PREMSG) != 0)
+				symmetric.mixPublicKey(localKeyPair);
 		}
 		
 		// The handshake has officially started - set the first action.
