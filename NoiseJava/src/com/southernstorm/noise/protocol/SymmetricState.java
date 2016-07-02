@@ -166,6 +166,22 @@ class SymmetricState implements Destroyable {
 	}
 
 	/**
+	 * Mixes a pre-supplied public key into the chaining key.
+	 * 
+	 * @param dh The object containing the public key.
+	 */
+	public void mixPublicKeyIntoCK(DHState dh)
+	{
+		byte[] temp = new byte [dh.getPublicKeyLength()];
+		try {
+			dh.getPublicKey(temp, 0);
+			mixKey(temp, 0, temp.length);
+		} finally {
+			Noise.destroy(temp);
+		}
+	}
+
+	/**
 	 * Encrypts a block of plaintext and mixes the ciphertext into the handshake hash.
 	 * 
 	 * @param plaintext The buffer containing the plaintext to encrypt.
