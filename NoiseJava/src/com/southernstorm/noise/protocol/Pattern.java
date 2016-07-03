@@ -224,7 +224,7 @@ class Pattern {
 	    DHES
 	};
 
-	static final byte[] noise_pattern_IK = {
+	private static final byte[] noise_pattern_IK = {
 	    FLAG_LOCAL_STATIC |
 	    FLAG_LOCAL_EPHEMERAL |
 	    FLAG_REMOTE_STATIC |
@@ -257,7 +257,7 @@ class Pattern {
 	    DHSE
 	};
 
-	static final byte[] noise_pattern_XXfallback = {
+	private static final byte[] noise_pattern_XXfallback = {
 	    FLAG_LOCAL_STATIC |
 	    FLAG_LOCAL_EPHEMERAL |
 	    FLAG_REMOTE_STATIC |
@@ -269,6 +269,33 @@ class Pattern {
 	    S,
 	    DHSE,
 	    FLIP_DIR,
+	    S,
+	    DHSE
+	};
+
+	private static final byte[] noise_pattern_NXfallback = {
+	    FLAG_LOCAL_STATIC |
+	    FLAG_LOCAL_EPHEMERAL |
+	    FLAG_REMOTE_EPHEMERAL |
+	    FLAG_REMOTE_EPHEM_REQ,
+
+	    E,
+	    DHEE,
+	    S,
+	    DHSE
+	};
+
+	private static final byte[] noise_pattern_IXfallback = {
+	    FLAG_LOCAL_STATIC |
+	    FLAG_LOCAL_EPHEMERAL |
+	    FLAG_REMOTE_STATIC |
+	    FLAG_REMOTE_EPHEMERAL |
+	    FLAG_REMOTE_REQUIRED |
+	    FLAG_REMOTE_EPHEM_REQ,
+
+	    E,
+	    DHEE,
+	    DHES,
 	    S,
 	    DHSE
 	};
@@ -313,6 +340,10 @@ class Pattern {
 			return noise_pattern_IX;
 		else if (name.equals("XXfallback"))
 			return noise_pattern_XXfallback;
+		else if (name.equals("NXfallback"))
+			return noise_pattern_NXfallback;
+		else if (name.equals("IXfallback"))
+			return noise_pattern_IXfallback;
 		return null;
 	}
 

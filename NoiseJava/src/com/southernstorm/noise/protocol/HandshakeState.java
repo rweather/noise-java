@@ -125,6 +125,11 @@ public class HandshakeState implements Destroyable {
 	private static final int REMOTE_PREMSG = 0x20;
 
 	/**
+	 * Fallback is possible from this pattern (two-way, ends in "K").
+	 */
+	private static final int FALLBACK_POSSIBLE = 0x40;
+
+	/**
 	 * Creates a new Noise handshake.
 	 * 
 	 * @param protocolName The name of the Noise protocol.
@@ -153,6 +158,9 @@ public class HandshakeState implements Destroyable {
 		if (pattern == null)
 			throw new IllegalArgumentException("Handshake pattern is not recognized");
 		byte flags = pattern[0];
+		int extraReqs = 0;
+		if ((flags & Pattern.FLAG_REMOTE_REQUIRED) != 0 && patternId.length() > 1)
+			extraReqs |= FALLBACK_POSSIBLE;
 		if (role == RESPONDER) {
 			// Reverse the pattern flags so that the responder is "local".
 			flags = Pattern.reverseFlags(flags);
@@ -166,7 +174,7 @@ public class HandshakeState implements Destroyable {
 		symmetric = new SymmetricState(protocolName, cipher, hash);
 		isInitiator = (role == INITIATOR);
 		action = NO_ACTION;
-		requirements = computeRequirements(flags, prefix, role, false);
+		requirements = extraReqs | computeRequirements(flags, prefix, role, false);
 		patternIndex = 1;
 		
 		// Create the DH objects that we will need later.
@@ -410,8 +418,8 @@ public class HandshakeState implements Destroyable {
 	 * more of the required parameters has not been supplied.
 	 * 
 	 * @throws UnsupportedOperationException An attempt was made to start a
-	 * "XXfallback" handshake pattern without first calling fallback() on a
-	 * previous "IK" handshake.
+	 * fallback handshake pattern without first calling fallback() on a
+	 * previous handshake.
 	 * 
 	 * @see #getAction()
 	 * @see #writeMessage(byte[], int, byte[], int, int)
@@ -424,10 +432,10 @@ public class HandshakeState implements Destroyable {
 			throw new IllegalStateException
 				("Handshake has already started; cannot start again");
 		}
-		if (pattern == Pattern.noise_pattern_XXfallback &&
+		if ((pattern[0] & Pattern.FLAG_REMOTE_EPHEM_REQ) != 0 &&
 				(requirements & FALLBACK_PREMSG) == 0) {
 			throw new UnsupportedOperationException
-				("Cannot start XXfallback pattern");
+				("Cannot start a fallback pattern");
 		}
 		
 		// Check that we have satisfied all of the pattern requirements.
@@ -487,11 +495,11 @@ public class HandshakeState implements Destroyable {
 	/**
 	 * Falls back to the "XXfallback" handshake pattern.
 	 * 
-	 * This function is used to help implement the "Noise Pipes" protocol.
-	 * It resets a HandshakeState object with the handshake pattern "IK",
-	 * converting it into an object with the handshake pattern "XXfallback".
-	 * Information from the previous session such as the local keypair,
-	 * the initiator's ephemeral key, the prologue value, and the
+	 * This function is intended used to help implement the "Noise Pipes" protocol.
+	 * It resets a HandshakeState object with the original handshake pattern
+	 * (usually "IK"), converting it into an object with the handshake pattern
+	 * "XXfallback".  Information from the previous session such as the local
+	 * keypair, the initiator's ephemeral key, the prologue value, and the
 	 * pre-shared key, are passed to the new session.
 	 *
 	 * Once the fallback has been initiated, the application can set
@@ -501,13 +509,12 @@ public class HandshakeState implements Destroyable {
 	 * session.
 	 *
 	 * After setting any new parameters, the application calls start()
-	 * again to restart the handshake from where it left off before
-	 * the fallback.
+	 * again to restart the handshake from where it left off before the fallback.
 	 *
 	 * Note that this function reverses the roles of initiator and responder.
 	 * 
-	 * @throws UnsupportedOperationException The handshake pattern is
-	 * not currently set to "IK".
+	 * @throws UnsupportedOperationException The current handshake pattern
+	 * is not compatible with "XXfallback".
 	 * 
 	 * @throws IllegalStateException The previous protocol has not started
 	 * or it has not reached the fallback position yet.
@@ -519,9 +526,59 @@ public class HandshakeState implements Destroyable {
 	 */
 	public void fallback() throws NoSuchAlgorithmException
 	{
-		// Bail out if the previous pattern is not "IK".
-		if (pattern != Pattern.noise_pattern_IK)
-			throw new UnsupportedOperationException("Previous handshake pattern is not IK");
+		fallback("XXfallback");
+	}
+
+	/**
+	 * Falls back to another handshake pattern.
+	 * 
+	 * @param patternName The name of the pattern to fall back to;
+	 * e.g. "XXfallback", "NXfallback", etc.
+	 * 
+	 * This function resets a HandshakeState object with the original
+	 * handshake pattern, and converts it into an object with the new handshake
+	 * patternName.  Information from the previous session such as the local
+	 * keypair, the initiator's ephemeral key, the prologue value, and the
+	 * pre-shared key, are passed to the new session.
+	 *
+	 * Once the fallback has been initiated, the application can set
+	 * new values for the handshake parameters if the values from the
+	 * previous session do not apply.  For example, the application may
+	 * use a different prologue for the fallback than for the original
+	 * session.
+	 *
+	 * After setting any new parameters, the application calls start()
+	 * again to restart the handshake from where it left off before the fallback.
+	 *
+	 * The new pattern may have greater key requirements than the original;
+	 * for example changing from "NK" from "XXfallback" requires that the
+	 * initiator's static public key be set.  The application is responsible for
+	 * setting any extra keys before calling start().
+	 *
+	 * Note that this function reverses the roles of initiator and responder.
+	 * 
+	 * @throws UnsupportedOperationException The current handshake pattern
+	 * is not compatible with the patternName, or patternName is not a
+	 * fallback pattern.
+	 * 
+	 * @throws IllegalStateException The previous protocol has not started
+	 * or it has not reached the fallback position yet.
+	 * 
+	 * @throws NoSuchAlgorithmException One of the cryptographic algorithms
+	 * that is specified in the new protocolName is not supported.
+	 * 
+	 * @see #start()
+	 */
+	public void fallback(String patternName) throws NoSuchAlgorithmException
+	{
+		// The original pattern must end in "K" for fallback to be possible.
+		if ((requirements & FALLBACK_POSSIBLE) == 0)
+			throw new UnsupportedOperationException("Previous handshake pattern does not support fallback");
+
+		// Check that "patternName" supports fallback.
+		byte[] newPattern = Pattern.lookup(patternName);
+		if (newPattern == null || (newPattern[0] & Pattern.FLAG_REMOTE_EPHEM_REQ) == 0)
+			throw new UnsupportedOperationException("New pattern is not a fallback pattern");
 
 	    // The initiator should be waiting for a return message from the
 	    // responder, and the responder should have failed on the first
@@ -554,7 +611,7 @@ public class HandshakeState implements Destroyable {
 			isInitiator = true;
 		}
 		action = NO_ACTION;
-		pattern = Pattern.noise_pattern_XXfallback;
+		pattern = newPattern;
 		patternIndex = 1;
 		byte flags = pattern[0];
 		if (!isInitiator) {
