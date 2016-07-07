@@ -300,6 +300,97 @@ class Pattern {
 	    DHSE
 	};
 
+	private static final byte[] noise_pattern_Xnoidh = {
+	    FLAG_LOCAL_STATIC |
+	    FLAG_LOCAL_EPHEMERAL |
+	    FLAG_REMOTE_STATIC |
+	    FLAG_REMOTE_REQUIRED,
+
+	    E,
+	    S,
+	    DHES,
+	    DHSS
+	};
+
+	private static final byte[] noise_pattern_NXnoidh = {
+	    FLAG_LOCAL_EPHEMERAL |
+	    FLAG_REMOTE_STATIC |
+	    FLAG_REMOTE_EPHEMERAL,
+
+	    E,
+	    FLIP_DIR,
+	    E,
+	    S,
+	    DHEE,
+	    DHSE
+	};
+
+	private static final byte[] noise_pattern_XXnoidh = {
+	    FLAG_LOCAL_STATIC |
+	    FLAG_LOCAL_EPHEMERAL |
+	    FLAG_REMOTE_STATIC |
+	    FLAG_REMOTE_EPHEMERAL,
+
+	    E,
+	    FLIP_DIR,
+	    E,
+	    S,
+	    DHEE,
+	    DHSE,
+	    FLIP_DIR,
+	    S,
+	    DHSE
+	};
+
+	private static final byte[] noise_pattern_KXnoidh = {
+	    FLAG_LOCAL_STATIC |
+	    FLAG_LOCAL_EPHEMERAL |
+	    FLAG_LOCAL_REQUIRED |
+	    FLAG_REMOTE_STATIC |
+	    FLAG_REMOTE_EPHEMERAL,
+
+	    E,
+	    FLIP_DIR,
+	    E,
+	    S,
+	    DHEE,
+	    DHES,
+	    DHSE
+	};
+
+	private static final byte[] noise_pattern_IKnoidh = {
+	    FLAG_LOCAL_STATIC |
+	    FLAG_LOCAL_EPHEMERAL |
+	    FLAG_REMOTE_STATIC |
+	    FLAG_REMOTE_EPHEMERAL |
+	    FLAG_REMOTE_REQUIRED,
+
+	    E,
+	    S,
+	    DHES,
+	    DHSS,
+	    FLIP_DIR,
+	    E,
+	    DHEE,
+	    DHES
+	};
+
+	private static final byte[] noise_pattern_IXnoidh = {
+	    FLAG_LOCAL_STATIC |
+	    FLAG_LOCAL_EPHEMERAL |
+	    FLAG_REMOTE_STATIC |
+	    FLAG_REMOTE_EPHEMERAL,
+
+	    E,
+	    S,
+	    FLIP_DIR,
+	    E,
+	    S,
+	    DHEE,
+	    DHES,
+	    DHSE
+	};
+
 	/**
 	 * Look up the description information for a pattern.
 	 * 
@@ -344,6 +435,18 @@ class Pattern {
 			return noise_pattern_NXfallback;
 		else if (name.equals("IXfallback"))
 			return noise_pattern_IXfallback;
+		else if (name.equals("Xnoidh"))
+			return noise_pattern_Xnoidh;
+		else if (name.equals("NXnoidh"))
+			return noise_pattern_NXnoidh;
+		else if (name.equals("XXnoidh"))
+			return noise_pattern_XXnoidh;
+		else if (name.equals("KXnoidh"))
+			return noise_pattern_KXnoidh;
+		else if (name.equals("IKnoidh"))
+			return noise_pattern_IKnoidh;
+		else if (name.equals("IXnoidh"))
+			return noise_pattern_IXnoidh;
 		return null;
 	}
 

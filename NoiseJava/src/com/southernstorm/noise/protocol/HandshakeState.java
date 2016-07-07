@@ -440,11 +440,11 @@ public class HandshakeState implements Destroyable {
 		
 		// Check that we have satisfied all of the pattern requirements.
 		if ((requirements & LOCAL_REQUIRED) != 0) {
-			if (!localKeyPair.hasPrivateKey())
+			if (localKeyPair == null || !localKeyPair.hasPrivateKey())
 				throw new IllegalStateException("Local static key required");
 		}
 		if ((requirements & REMOTE_REQUIRED) != 0) {
-			if (!remotePublicKey.hasPublicKey())
+			if (remotePublicKey == null || !remotePublicKey.hasPublicKey())
 				throw new IllegalStateException("Remote static key required");
 		}
 		if ((requirements & PSK_REQUIRED) != 0) {
@@ -602,12 +602,17 @@ public class HandshakeState implements Destroyable {
 		symmetric = newSymmetric;
 		
 		// Convert the HandshakeState to the "XXfallback" pattern.
-		remotePublicKey.clearKey();
 		if (isInitiator) {
-			remoteEphemeral.clearKey();
+			if (remoteEphemeral != null)
+				remoteEphemeral.clearKey();
+			if (remotePublicKey != null)
+				remotePublicKey.clearKey();
 			isInitiator = false;
 		} else {
-			localEphemeral.clearKey();
+			if (localEphemeral != null)
+				localEphemeral.clearKey();
+			if ((newPattern[0] & Pattern.FLAG_REMOTE_REQUIRED) == 0 && remotePublicKey != null)
+				remotePublicKey.clearKey();
 			isInitiator = true;
 		}
 		action = NO_ACTION;
