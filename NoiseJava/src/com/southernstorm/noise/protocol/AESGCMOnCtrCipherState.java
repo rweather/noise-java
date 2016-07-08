@@ -170,7 +170,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 	private void setup(byte[] ad) throws InvalidKeyException, InvalidAlgorithmParameterException
 	{
 		// Check for nonce wrap-around.
-		if (n < 0)
+		if (n == -1L)
 			throw new IllegalStateException("Nonce has wrapped around");
 		
 		// Format the counter/IV block for AES/CTR/NoPadding.
@@ -330,8 +330,6 @@ class AESGCMOnCtrCipherState implements CipherState {
 
 	@Override
 	public void setNonce(long nonce) {
-		if (nonce < n)
-			throw new IllegalArgumentException("Nonce values cannot go backwards");
 		n = nonce;
 	}
 }

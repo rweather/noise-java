@@ -151,12 +151,8 @@ public interface CipherState extends Destroyable {
 	 * @param nonce The new nonce value, which must be greater than or equal
 	 * to the current value.
 	 * 
-	 * @throws IllegalArgumentException The nonce is less than the current value.
-	 * 
-	 * Note that in this implementation, nonces are 63-bit quantities.
-	 * The Noise specification normally allows for 64-bit nonces.
-	 * 
-	 * Thie function is intended for testing purposes only.
+	 * This function is intended for testing purposes only.  If the nonce
+	 * value goes backwards then security may be compromised.
 	 */
 	void setNonce(long nonce);
 }

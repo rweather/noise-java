@@ -117,7 +117,7 @@ public class CipherStateTests {
 		
 	    // Fast-forward the nonce to just before the rollover.  We will be able
 	    // to encrypt one more block, and then the next request will be rejected.
-		cipher.setNonce(0x7FFFFFFFFFFFFFFFL);
+		cipher.setNonce(-2L);
 		try {
 			buffer = new byte [ciphertextBytes.length];
 			Arrays.fill(buffer, (byte)0xAA);
@@ -151,7 +151,7 @@ public class CipherStateTests {
 
 	    // Fast-forward the nonce to just before the rollover.  We will be able
 	    // to decrypt one more block, and then the next request will be rejected.
-		cipher.setNonce(0x7FFFFFFFFFFFFFFFL);
+		cipher.setNonce(-2L);
 		try {
 			buffer = new byte [plaintextBytes.length];
 			Arrays.fill(buffer, (byte)0xAA);
