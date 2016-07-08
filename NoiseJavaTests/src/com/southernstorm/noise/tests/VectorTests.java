@@ -75,6 +75,7 @@ public class VectorTests {
 		public String dh;
 		public String cipher;
 		public String hash;
+		public String fallback_pattern;
 		public byte[] init_prologue;
 		public byte[] init_ephemeral;
 		public byte[] init_static;
@@ -196,9 +197,14 @@ public class VectorTests {
 					// Success!
 				}
 				
+				// Look up the pattern to fall back to.
+				String pattern = vec.fallback_pattern;
+				if (pattern == null)
+					pattern = "XXfallback";
+
 				// Initiate fallback on both sides.
-				initiator.fallback();
-				responder.fallback();
+				initiator.fallback(pattern);
+				responder.fallback(pattern);
 				
 				// Restart the protocols.
 				initiator.start();
@@ -297,6 +303,8 @@ public class VectorTests {
 				vec.cipher = reader.nextString();
 			else if (name.equals("hash"))
 				vec.hash = reader.nextString();
+			else if (name.equals("fallback_pattern"))
+				vec.fallback_pattern = reader.nextString();
 			else if (name.equals("init_prologue"))
 				vec.init_prologue = DatatypeConverter.parseHexBinary(reader.nextString());
 			else if (name.equals("init_ephemeral"))

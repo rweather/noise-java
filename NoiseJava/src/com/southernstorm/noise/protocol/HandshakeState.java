@@ -593,10 +593,17 @@ public class HandshakeState implements Destroyable {
 				throw new IllegalStateException("Responder cannot fall back from this state");
 		}
 		
-		// Format a new protocol name for the "XXfallback" variant
+		// Format a new protocol name for the fallback variant
 		// and recreate the SymmetricState object.
-		String name = symmetric.getProtocolName().replace("_IK_", "_XXfallback_");
-		String[] components = name.split("_");
+		String[] components = symmetric.getProtocolName().split("_");
+		components[1] = patternName;
+		StringBuilder builder = new StringBuilder();
+		builder.append(components[0]);
+		for (int index = 1; index < components.length; ++index) {
+			builder.append('_');
+			builder.append(components[index]);
+		}
+		String name = builder.toString();
 		SymmetricState newSymmetric = new SymmetricState(name, components[3], components[4]);
 		symmetric.destroy();
 		symmetric = newSymmetric;
