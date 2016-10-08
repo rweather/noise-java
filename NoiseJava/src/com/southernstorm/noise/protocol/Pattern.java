@@ -32,10 +32,10 @@ class Pattern {
 	// Token codes.
 	public static final byte S = 1;
 	public static final byte E = 2;
-	public static final byte DHEE = 3;
-	public static final byte DHES = 4;
-	public static final byte DHSE = 5;
-	public static final byte DHSS = 6;
+	public static final byte EE = 3;
+	public static final byte ES = 4;
+	public static final byte SE = 5;
+	public static final byte SS = 6;
 	public static final byte FLIP_DIR = 7;
 	
 	// Pattern flag bits.
@@ -54,7 +54,7 @@ class Pattern {
 	    FLAG_REMOTE_REQUIRED,
 
 	    E,
-	    DHES
+	    ES
 	};
 
 	private static final byte[] noise_pattern_K = {
@@ -65,8 +65,8 @@ class Pattern {
 	    FLAG_REMOTE_REQUIRED,
 
 	    E,
-	    DHES,
-	    DHSS
+	    ES,
+	    SS
 	};
 
 	private static final byte[] noise_pattern_X = {
@@ -76,9 +76,9 @@ class Pattern {
 	    FLAG_REMOTE_REQUIRED,
 
 	    E,
-	    DHES,
+	    ES,
 	    S,
-	    DHSS
+	    SS
 	};
 
 	private static final byte[] noise_pattern_NN = {
@@ -88,7 +88,7 @@ class Pattern {
 	    E,
 	    FLIP_DIR,
 	    E,
-	    DHEE
+	    EE
 	};
 
 	private static final byte[] noise_pattern_NK = {
@@ -98,10 +98,10 @@ class Pattern {
 	    FLAG_REMOTE_REQUIRED,
 
 	    E,
-	    DHES,
+	    ES,
 	    FLIP_DIR,
 	    E,
-	    DHEE
+	    EE
 	};
 
 	private static final byte[] noise_pattern_NX = {
@@ -112,9 +112,9 @@ class Pattern {
 	    E,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
+	    EE,
 	    S,
-	    DHSE
+	    ES
 	};
 
 	private static final byte[] noise_pattern_XN = {
@@ -125,10 +125,10 @@ class Pattern {
 	    E,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
+	    EE,
 	    FLIP_DIR,
 	    S,
-	    DHSE
+	    SE
 	};
 
 	private static final byte[] noise_pattern_XK = {
@@ -139,13 +139,13 @@ class Pattern {
 	    FLAG_REMOTE_REQUIRED,
 
 	    E,
-	    DHES,
+	    ES,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
+	    EE,
 	    FLIP_DIR,
 	    S,
-	    DHSE
+	    SE
 	};
 
 	private static final byte[] noise_pattern_XX = {
@@ -157,12 +157,12 @@ class Pattern {
 	    E,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
+	    EE,
 	    S,
-	    DHSE,
+	    ES,
 	    FLIP_DIR,
 	    S,
-	    DHSE
+	    SE
 	};
 
 	private static final byte[] noise_pattern_KN = {
@@ -174,8 +174,8 @@ class Pattern {
 	    E,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
-	    DHES
+	    EE,
+	    SE
 	};
 
 	private static final byte[] noise_pattern_KK = {
@@ -187,12 +187,12 @@ class Pattern {
 	    FLAG_REMOTE_REQUIRED,
 
 	    E,
-	    DHES,
-	    DHSS,
+	    ES,
+	    SS,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
-	    DHES
+	    EE,
+	    SE
 	};
 
 	private static final byte[] noise_pattern_KX = {
@@ -205,10 +205,10 @@ class Pattern {
 	    E,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
-	    DHES,
+	    EE,
+	    SE,
 	    S,
-	    DHSE
+	    ES
 	};
 
 	private static final byte[] noise_pattern_IN = {
@@ -220,8 +220,8 @@ class Pattern {
 	    S,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
-	    DHES
+	    EE,
+	    SE
 	};
 
 	private static final byte[] noise_pattern_IK = {
@@ -232,13 +232,13 @@ class Pattern {
 	    FLAG_REMOTE_REQUIRED,
 
 	    E,
-	    DHES,
+	    ES,
 	    S,
-	    DHSS,
+	    SS,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
-	    DHES
+	    EE,
+	    SE
 	};
 
 	private static final byte[] noise_pattern_IX = {
@@ -251,10 +251,10 @@ class Pattern {
 	    S,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
-	    DHES,
+	    EE,
+	    SE,
 	    S,
-	    DHSE
+	    ES
 	};
 
 	private static final byte[] noise_pattern_XXfallback = {
@@ -265,12 +265,12 @@ class Pattern {
 	    FLAG_REMOTE_EPHEM_REQ,
 
 	    E,
-	    DHEE,
+	    EE,
 	    S,
-	    DHSE,
+	    SE,
 	    FLIP_DIR,
 	    S,
-	    DHSE
+	    ES
 	};
 
 	private static final byte[] noise_pattern_Xnoidh = {
@@ -281,8 +281,8 @@ class Pattern {
 
 	    E,
 	    S,
-	    DHES,
-	    DHSS
+	    ES,
+	    SS
 	};
 
 	private static final byte[] noise_pattern_NXnoidh = {
@@ -294,8 +294,8 @@ class Pattern {
 	    FLIP_DIR,
 	    E,
 	    S,
-	    DHEE,
-	    DHSE
+	    EE,
+	    ES
 	};
 
 	private static final byte[] noise_pattern_XXnoidh = {
@@ -308,11 +308,11 @@ class Pattern {
 	    FLIP_DIR,
 	    E,
 	    S,
-	    DHEE,
-	    DHSE,
+	    EE,
+	    ES,
 	    FLIP_DIR,
 	    S,
-	    DHSE
+	    SE
 	};
 
 	private static final byte[] noise_pattern_KXnoidh = {
@@ -326,9 +326,9 @@ class Pattern {
 	    FLIP_DIR,
 	    E,
 	    S,
-	    DHEE,
-	    DHES,
-	    DHSE
+	    EE,
+	    SE,
+	    ES
 	};
 
 	private static final byte[] noise_pattern_IKnoidh = {
@@ -340,12 +340,12 @@ class Pattern {
 
 	    E,
 	    S,
-	    DHES,
-	    DHSS,
+	    ES,
+	    SS,
 	    FLIP_DIR,
 	    E,
-	    DHEE,
-	    DHES
+	    EE,
+	    SE
 	};
 
 	private static final byte[] noise_pattern_IXnoidh = {
@@ -359,9 +359,9 @@ class Pattern {
 	    FLIP_DIR,
 	    E,
 	    S,
-	    DHEE,
-	    DHES,
-	    DHSE
+	    EE,
+	    SE,
+	    ES
 	};
 
 	/**

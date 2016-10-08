@@ -767,30 +767,36 @@ public class HandshakeState implements Destroyable {
 					}
 					break;
 
-					case Pattern.DHEE:
+					case Pattern.EE:
 					{
-						// DH operation with local and remote ephemeral keys.
+						// DH operation with initiator and responder ephemeral keys.
 						mixDH(localEphemeral, remoteEphemeral);
 					}
 					break;
 
-					case Pattern.DHES:
+					case Pattern.ES:
 					{
-						// DH operation with local ephemeral and remote static keys.
-						mixDH(localEphemeral, remotePublicKey);
+						// DH operation with initiator ephemeral and responder static keys.
+						if (isInitiator)
+							mixDH(localEphemeral, remotePublicKey);
+						else
+							mixDH(localKeyPair, remoteEphemeral);
 					}
 					break;
 
-					case Pattern.DHSE:
+					case Pattern.SE:
 					{
-						// DH operation with local static and remote ephemeral keys.
-						mixDH(localKeyPair, remoteEphemeral);
+						// DH operation with initiator static and responder ephemeral keys.
+						if (isInitiator)
+							mixDH(localKeyPair, remoteEphemeral);
+						else
+							mixDH(localEphemeral, remotePublicKey);
 					}
 					break;
 
-					case Pattern.DHSS:
+					case Pattern.SS:
 					{
-						// DH operation with local and remote static keys.
+						// DH operation with initiator and responder static keys.
 						mixDH(localKeyPair, remotePublicKey);
 					}
 					break;
@@ -928,30 +934,36 @@ public class HandshakeState implements Destroyable {
 					}
 					break;
 	
-					case Pattern.DHEE:
+					case Pattern.EE:
 					{
-						// DH operation with local and remote ephemeral keys.
+						// DH operation with initiator and responder ephemeral keys.
 						mixDH(localEphemeral, remoteEphemeral);
 					}
 					break;
 	
-					case Pattern.DHES:
+					case Pattern.ES:
 					{
-						// DH operation with local static and remote ephemeral keys.
-						mixDH(localKeyPair, remoteEphemeral);
+						// DH operation with initiator ephemeral and responder static keys.
+						if (isInitiator)
+							mixDH(localEphemeral, remotePublicKey);
+						else
+							mixDH(localKeyPair, remoteEphemeral);
 					}
 					break;
 	
-					case Pattern.DHSE:
+					case Pattern.SE:
 					{
-						// DH operation with local ephemeral and remote static keys.
-						mixDH(localEphemeral, remotePublicKey);
+						// DH operation with initiator static and responder ephemeral keys.
+						if (isInitiator)
+							mixDH(localKeyPair, remoteEphemeral);
+						else
+							mixDH(localEphemeral, remotePublicKey);
 					}
 					break;
 	
-					case Pattern.DHSS:
+					case Pattern.SS:
 					{
-						// DH operation with local and remote static keys.
+						// DH operation with initiator and responder static keys.
 						mixDH(localKeyPair, remotePublicKey);
 					}
 					break;
