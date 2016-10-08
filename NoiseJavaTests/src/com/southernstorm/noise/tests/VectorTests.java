@@ -73,17 +73,20 @@ public class VectorTests {
 		public String name;
 		public String pattern;
 		public String dh;
+		public String hybrid;
 		public String cipher;
 		public String hash;
 		public String fallback_pattern;
 		public byte[] init_prologue;
 		public byte[] init_ephemeral;
+		public byte[] init_hybrid;
 		public byte[] init_static;
 		public byte[] init_remote_static;
 		public byte[] init_psk;
 		public byte[] init_ssk;
 		public byte[] resp_prologue;
 		public byte[] resp_ephemeral;
+		public byte[] resp_hybrid;
 		public byte[] resp_static;
 		public byte[] resp_remote_static;
 		public byte[] resp_psk;
@@ -130,6 +133,8 @@ public class VectorTests {
 			initiator.getLocalKeyPair().setPrivateKey(vec.init_static, 0);
 		if (vec.init_remote_static != null)
 			initiator.getRemotePublicKey().setPublicKey(vec.init_remote_static, 0);
+		if (vec.init_hybrid != null)
+			initiator.getFixedHybridKey().setPrivateKey(vec.init_hybrid, 0);
 		if (vec.init_ephemeral != null)
 			initiator.getFixedEphemeralKey().setPrivateKey(vec.init_ephemeral, 0);
 		if (vec.init_psk != null)
@@ -146,6 +151,8 @@ public class VectorTests {
 			if (vec.pattern.length() != 1)
 				responder.getFixedEphemeralKey().setPrivateKey(vec.resp_ephemeral, 0);
 		}
+		if (vec.resp_hybrid != null)
+			responder.getFixedHybridKey().setPrivateKey(vec.resp_hybrid, 0);
 		if (vec.resp_psk != null)
 			responder.setPreSharedKey(vec.resp_psk, 0, vec.resp_psk.length);
 		
@@ -299,6 +306,8 @@ public class VectorTests {
 				vec.pattern = reader.nextString();
 			else if (name.equals("dh"))
 				vec.dh = reader.nextString();
+			else if (name.equals("hybrid"))
+				vec.hybrid = reader.nextString();
 			else if (name.equals("cipher"))
 				vec.cipher = reader.nextString();
 			else if (name.equals("hash"))
@@ -309,6 +318,8 @@ public class VectorTests {
 				vec.init_prologue = DatatypeConverter.parseHexBinary(reader.nextString());
 			else if (name.equals("init_ephemeral"))
 				vec.init_ephemeral = DatatypeConverter.parseHexBinary(reader.nextString());
+			else if (name.equals("init_hybrid_ephemeral"))
+				vec.init_hybrid = DatatypeConverter.parseHexBinary(reader.nextString());
 			else if (name.equals("init_static"))
 				vec.init_static = DatatypeConverter.parseHexBinary(reader.nextString());
 			else if (name.equals("init_remote_static"))
@@ -321,6 +332,8 @@ public class VectorTests {
 				vec.resp_prologue = DatatypeConverter.parseHexBinary(reader.nextString());
 			else if (name.equals("resp_ephemeral"))
 				vec.resp_ephemeral = DatatypeConverter.parseHexBinary(reader.nextString());
+			else if (name.equals("resp_hybrid_ephemeral"))
+				vec.resp_hybrid = DatatypeConverter.parseHexBinary(reader.nextString());
 			else if (name.equals("resp_static"))
 				vec.resp_static = DatatypeConverter.parseHexBinary(reader.nextString());
 			else if (name.equals("resp_remote_static"))
@@ -362,7 +375,10 @@ public class VectorTests {
 		String protocolName = "Noise";
 		if (vec.init_psk != null || vec.resp_psk != null)
 			protocolName += "PSK";
-		protocolName += "_" + vec.pattern + "_" + vec.dh + "_" + vec.cipher + "_" + vec.hash;
+		String dh = vec.dh;
+		if (vec.hybrid != null)
+			dh = dh + "+" + vec.hybrid;
+		protocolName += "_" + vec.pattern + "_" + dh + "_" + vec.cipher + "_" + vec.hash;
 		if (vec.name == null)
 			vec.name = protocolName;
 		
