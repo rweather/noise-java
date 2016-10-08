@@ -205,6 +205,17 @@ public class HandshakeState implements Destroyable {
 			remoteEphemeral = Noise.createDH(dh);
 		if ((flags & Pattern.FLAG_REMOTE_HYBRID) != 0)
 			remoteHybrid = Noise.createDH(hybrid);
+		
+		// We cannot use hybrid algorithms like New Hope for ephemeral or static keys,
+		// as the unbalanced nature of the algorithm only works with "f" and "ff" tokens.
+		if (localKeyPair instanceof DHStateHybrid)
+			throw new NoSuchAlgorithmException("Cannot use '" + localKeyPair.getDHName() + "' for static keys");
+		if (localEphemeral instanceof DHStateHybrid)
+			throw new NoSuchAlgorithmException("Cannot use '" + localEphemeral.getDHName() + "' for ephemeral keys");
+		if (remotePublicKey instanceof DHStateHybrid)
+			throw new NoSuchAlgorithmException("Cannot use '" + remotePublicKey.getDHName() + "' for static keys");
+		if (remoteEphemeral instanceof DHStateHybrid)
+			throw new NoSuchAlgorithmException("Cannot use '" + remoteEphemeral.getDHName() + "' for ephemeral keys");
 	}
 
 	/**
@@ -862,10 +873,20 @@ public class HandshakeState implements Destroyable {
 			            // then a fixed hybrid key may have already been provided.
 						if (localHybrid == null)
 							throw new IllegalStateException("Pattern definition error");
-						if (fixedHybrid == null)
-							localHybrid.generateKeyPair();  // FIXME: dependent keys
-						else
-							localHybrid.copyFrom(fixedHybrid);
+						if (localHybrid instanceof DHStateHybrid) {
+							// The DH object is something like New Hope which needs to
+							// generate keys relative to the other party's public key.
+							DHStateHybrid hybrid = (DHStateHybrid)localHybrid;
+							if (fixedHybrid == null)
+								hybrid.generateKeyPair(remoteHybrid);
+							else
+								hybrid.copyFrom(fixedHybrid, remoteHybrid);
+						} else {
+							if (fixedHybrid == null)
+								localHybrid.generateKeyPair();
+							else
+								localHybrid.copyFrom(fixedHybrid);
+						}
 						len = localHybrid.getPublicKeyLength();
 						if (space < len)
 							throw new ShortBufferException();
@@ -1056,7 +1077,13 @@ public class HandshakeState implements Destroyable {
 						// Decrypt and read the remote hybrid ephemeral key.
 						if (remoteHybrid == null)
 							throw new IllegalStateException("Pattern definition error");
-						len = remoteHybrid.getPublicKeyLength(); // TODO: Dependent keys
+						if (remoteHybrid instanceof DHStateHybrid) {
+							// The DH object is something like New Hope.  The public key
+							// length may need to change based on whether we already have
+							// generated a local hybrid keypair or not.
+							((DHStateHybrid)remoteHybrid).specifyPeer(localHybrid);
+						}
+						len = remoteHybrid.getPublicKeyLength();
 						macLen = symmetric.getMACLength();
 						if (space < (len + macLen))
 							throw new ShortBufferException();

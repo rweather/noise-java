@@ -170,8 +170,8 @@ public class VectorTests {
 		HandshakeState send, recv;
 		boolean isOneWay = (vec.pattern.length() == 1);
 		boolean fallback = vec.fallback_expected;
-		byte[] message = new byte [1024];
-		byte[] plaintext = new byte [1024];
+		byte[] message = new byte [8192];
+		byte[] plaintext = new byte [8192];
 		for (; index < vec.messages.length; ++index) {
 			if (initiator.getAction() == HandshakeState.SPLIT &&
 					responder.getAction() == HandshakeState.SPLIT) {
