@@ -1,7 +1,7 @@
 #!/bin/sh
 rm -rf doc/html
 mkdir -p doc/html
-exec javadoc -sourcepath NoiseJava/src \
+exec javadoc -sourcepath src/main/java/ \
     -subpackages com.southernstorm.noise.protocol \
     -d doc/html \
     -windowtitle "Noise-Java" \
