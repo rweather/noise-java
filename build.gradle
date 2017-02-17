@@ -4,3 +4,9 @@ dependencies {
     testCompile files('libs/junit-4.12.jar')
     testCompile files('libs/hamcrest-core-1.3.jar')
 }
+
+// Enable Java's Xlint warnings, which includes the standard
+// -Xlint:unchecked and -Xlint:deprecation.
+compileJava {
+    options.compilerArgs << '-Xlint:all'
+}
