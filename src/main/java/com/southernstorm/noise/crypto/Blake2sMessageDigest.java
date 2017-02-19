@@ -36,26 +36,42 @@ import com.southernstorm.noise.protocol.Destroyable;
  * not supported.
  */
 public class Blake2sMessageDigest extends MessageDigest implements Destroyable {
+
+	private static final int BLOCK_SIZE = 64;
 	
-	private int[] h;
-	private byte[] block;
-	private int[] m;
-	private int[] v;
+	private int[] h = new int [8];
+	private byte[] block = new byte [BLOCK_SIZE];
+	private int[] m = new int [16];
+	private int[] v = new int [16];
+
 	private long length;
 	private int posn;
+
+	private byte[] key;
+	private boolean isKeyed() {
+		return key != null;
+	}
 
 	/**
 	 * Constructs a new BLAKE2s message digest object.
 	 */
 	public Blake2sMessageDigest() {
+		this(null);
+	}
+
+	/**
+	 * Constructs a new keyed BLAKE2s message.
+	 * @param key secret
+	 */
+	public Blake2sMessageDigest(byte[] key) {
 		super("BLAKE2S-256");
-		h = new int [8];
-		block = new byte [64];
-		m = new int [16];
-		v = new int [16];
+		this.key = key;
+		if (isKeyed() && key.length > 32) {
+			throw new IllegalArgumentException("Key can be at most 32 bytes");
+		}
 		engineReset();
 	}
-	
+
 	@Override
 	protected byte[] engineDigest() {
 		byte[] digest = new byte [32];
@@ -73,7 +89,7 @@ public class Blake2sMessageDigest extends MessageDigest implements Destroyable {
 	{
 		if (len < 32)
 			throw new DigestException("Invalid digest length for BLAKE2s");
-		Arrays.fill(block, posn, 64, (byte)0);
+		Arrays.fill(block, posn, BLOCK_SIZE, (byte)0);
 		transform(-1);
 		for (int index = 0; index < 8; ++index) {
 			int value = h[index];
@@ -93,6 +109,9 @@ public class Blake2sMessageDigest extends MessageDigest implements Destroyable {
 	@Override
 	protected void engineReset() {
 		h[0] = 0x6A09E667 ^ 0x01010020;
+		if (isKeyed()) {
+			h[0] = h[0] ^ key.length << 8 ;
+		}
 		h[1] = 0xBB67AE85;
 		h[2] = 0x3C6EF372;
 		h[3] = 0xA54FF53A;
@@ -100,13 +119,21 @@ public class Blake2sMessageDigest extends MessageDigest implements Destroyable {
 		h[5] = 0x9B05688C;
 		h[6] = 0x1F83D9AB;
 		h[7] = 0x5BE0CD19;
+
 		length = 0;
 		posn = 0;
+		if (isKeyed()) {
+		    // Set the first block to the zero-padded key.
+			System.arraycopy(key, 0, block, 0, key.length);
+			Arrays.fill(block, key.length, block.length, (byte)0);
+			length = BLOCK_SIZE;
+			posn = BLOCK_SIZE;
+		}
 	}
 
 	@Override
 	protected void engineUpdate(byte input) {
-		if (posn >= 64) {
+		if (posn >= BLOCK_SIZE) {
 			transform(0);
 			posn = 0;
 		}
@@ -117,11 +144,11 @@ public class Blake2sMessageDigest extends MessageDigest implements Destroyable {
 	@Override
 	protected void engineUpdate(byte[] input, int offset, int len) {
 		while (len > 0) {
-			if (posn >= 64) {
+			if (posn >= BLOCK_SIZE) {
 				transform(0);
 				posn = 0;
 			}
-			int temp = (64 - posn);
+			int temp = (BLOCK_SIZE - posn);
 			if (temp > len)
 				temp = len;
 			System.arraycopy(input, offset, block, posn, temp);
