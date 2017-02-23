@@ -30,6 +30,7 @@ import java.security.NoSuchAlgorithmException;
 
 import org.junit.Test;
 
+import com.southernstorm.noise.crypto.Blake2sMessageDigest;
 import com.southernstorm.noise.protocol.Noise;
 
 /**
@@ -103,6 +104,19 @@ public class HashTests {
 		testHash("BLAKE2s", "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", "0x6f4df5116a6f332edab1d9e10ee87df6557beab6259d7663f3bcd5722c13f189");
 		testHash("BLAKE2s", "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu", "0x358dd2ed0780d4054e76cb6f3a5bce2841e8e2f547431d4d09db21b66d941fc7");
 	}
+
+	@Test
+	public void blake2sKeyed() {
+		byte[] input = TestUtils.stringToData("0x000102030405060708090a0b0c0d0e0f101112");
+		byte[] key = TestUtils.stringToData("0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
+		byte[] hash = TestUtils.stringToData("0xf1b01558ce541262f5ec34299d6fb4090009e3434be2f49105cf46af4d2d4124");
+
+		MessageDigest digest = new Blake2sMessageDigest(key);
+		byte[] output = digest.digest(input);
+
+		assertArrayEquals(hash, output);
+	}
+
 
 	@Test
 	public void sha256() {
