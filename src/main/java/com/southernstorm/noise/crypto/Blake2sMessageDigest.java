@@ -32,8 +32,9 @@ import com.southernstorm.noise.protocol.Destroyable;
  * Fallback implementation of BLAKE2s for the Noise library.
  * 
  * This implementation only supports message digesting with an output
- * length of 32 bytes.  Keyed hashing and variable-length digests are
- * not supported.
+ * length of 32 bytes. Variable-length digests are not supported.
+ *
+ * Keyed digests are supported.
  */
 public class Blake2sMessageDigest extends MessageDigest implements Destroyable {
 
