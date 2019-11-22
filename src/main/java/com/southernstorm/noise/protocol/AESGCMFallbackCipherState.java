@@ -110,7 +110,7 @@ class AESGCMFallbackCipherState implements CipherState {
 	private void setup(byte[] ad)
 	{
 		// Check for nonce wrap-around.
-		if (n == -1L)
+		if (n == Long.MIN_VALUE)
 			throw new IllegalStateException("Nonce has wrapped around");
 		
 		// Format the counter/IV block.
@@ -261,5 +261,10 @@ class AESGCMFallbackCipherState implements CipherState {
 	@Override
 	public void setNonce(long nonce) {
 		n = nonce;
+	}
+
+	@Override
+	public long getNonce() {
+		return n;
 	}
 }

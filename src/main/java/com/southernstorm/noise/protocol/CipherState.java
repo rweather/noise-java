@@ -155,4 +155,28 @@ public interface CipherState extends Destroyable {
 	 * value goes backwards then security may be compromised.
 	 */
 	void setNonce(long nonce);
+
+	/**
+	 * Gets the nonce value.
+	 *
+	 * @return The current nonce in this cipher state.
+	 */
+	long getNonce();
+
+	/**
+	 * Executes a rekey in-place for this cipher.
+	 */
+	default void rekey() throws ShortBufferException {
+		if (getKeyLength() != 32) {
+			throw new UnsupportedOperationException("rekey is only supported by default for 32 byte keys");
+		}
+		long originalNonce = getNonce(); // Save the nonce for after the rekey
+		byte[] newKey = new byte[32+getMACLength()];
+		setNonce(-1); // Set to 2^64-1
+		encryptWithAd(new byte[] {},
+				new byte[] { 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0 }, 0,
+				newKey, 0, 32);
+		initializeKey(newKey, 0);
+		setNonce(originalNonce); // Restore nonce per specification
+	}
 }

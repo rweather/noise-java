@@ -136,7 +136,7 @@ class ChaChaPolyCipherState implements CipherState {
 	 */
 	private void setup(byte[] ad)
 	{
-		if (n == -1L)
+		if (n == Long.MIN_VALUE)
 			throw new IllegalStateException("Nonce has wrapped around");
 		ChaChaCore.initIV(input, n++);
 		ChaChaCore.hash(output, input);
@@ -286,5 +286,10 @@ class ChaChaPolyCipherState implements CipherState {
 	@Override
 	public void setNonce(long nonce) {
 		n = nonce;
+	}
+
+	@Override
+	public long getNonce() {
+		return n;
 	}
 }
