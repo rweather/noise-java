@@ -169,10 +169,6 @@ class AESGCMOnCtrCipherState implements CipherState {
 	 */
 	private void setup(byte[] ad) throws InvalidKeyException, InvalidAlgorithmParameterException
 	{
-		// Check for nonce wrap-around.
-		if (n == Long.MIN_VALUE)
-			throw new IllegalStateException("Nonce has wrapped around");
-		
 		// Format the counter/IV block for AES/CTR/NoPadding.
 		iv[0] = 0;
 		iv[1] = 0;

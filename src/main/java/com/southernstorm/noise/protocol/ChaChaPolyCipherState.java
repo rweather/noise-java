@@ -136,8 +136,6 @@ class ChaChaPolyCipherState implements CipherState {
 	 */
 	private void setup(byte[] ad)
 	{
-		if (n == Long.MIN_VALUE)
-			throw new IllegalStateException("Nonce has wrapped around");
 		ChaChaCore.initIV(input, n++);
 		ChaChaCore.hash(output, input);
 		Arrays.fill(polyKey, (byte)0);
