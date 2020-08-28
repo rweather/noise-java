@@ -185,10 +185,11 @@ class AESGCMFallbackCipherState implements CipherState {
 			byte[] ciphertext, int ciphertextOffset, int length)
 			throws ShortBufferException {
 		int space;
-		if (ciphertextOffset > ciphertext.length)
-			space = 0;
-		else
-			space = ciphertext.length - ciphertextOffset;
+		if (ciphertextOffset < 0 || ciphertextOffset > ciphertext.length)
+			throw new IllegalArgumentException();
+		if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length)
+			throw new IllegalArgumentException();
+		space = ciphertext.length - ciphertextOffset;
 		if (!haskey) {
 			// The key is not set yet - return the plaintext as-is.
 			if (length > space)
@@ -214,16 +215,15 @@ class AESGCMFallbackCipherState implements CipherState {
 			int ciphertextOffset, byte[] plaintext, int plaintextOffset,
 			int length) throws ShortBufferException, BadPaddingException {
 		int space;
-		if (ciphertextOffset > ciphertext.length)
-			space = 0;
+		if (ciphertextOffset < 0 || ciphertextOffset > ciphertext.length)
+			throw new IllegalArgumentException();
 		else
 			space = ciphertext.length - ciphertextOffset;
 		if (length > space)
 			throw new ShortBufferException();
-		if (plaintextOffset > plaintext.length)
-			space = 0;
-		else
-			space = plaintext.length - plaintextOffset;
+		if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length)
+			throw new IllegalArgumentException();
+		space = plaintext.length - plaintextOffset;
 		if (!haskey) {
 			// The key is not set yet - return the ciphertext as-is.
 			if (length > space)

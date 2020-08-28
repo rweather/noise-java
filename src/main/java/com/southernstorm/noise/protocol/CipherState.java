@@ -100,6 +100,8 @@ public interface CipherState extends Destroyable {
 	 * 
 	 * @throws IllegalStateException The nonce has wrapped around.
 	 * 
+	 * @throws IllegalArgumentException One of the parameters is out of range.
+	 *
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * encryption.  In that case, plaintextOffset must be identical to
 	 * ciphertextOffset.
@@ -130,6 +132,8 @@ public interface CipherState extends Destroyable {
 	 * 
 	 * @throws IllegalStateException The nonce has wrapped around.
 	 * 
+	 * @throws IllegalArgumentException One of the parameters is out of range.
+	 *
 	 * The plaintext and ciphertext buffers can be the same for in-place
 	 * decryption.  In that case, ciphertextOffset must be identical to
 	 * plaintextOffset.
