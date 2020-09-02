@@ -216,7 +216,7 @@ class ChaChaPolyCipherState implements CipherState {
 		int space;
 		if (ciphertextOffset < 0 || ciphertextOffset > ciphertext.length)
 			throw new IllegalArgumentException();
-		if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length || plaintextOffset + length > plaintext.length)
+		if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length || plaintextOffset + length < plaintextOffset || plaintextOffset + length > plaintext.length)
 			throw new IllegalArgumentException();
 		space = ciphertext.length - ciphertextOffset;
 		if (!haskey) {
@@ -248,7 +248,7 @@ class ChaChaPolyCipherState implements CipherState {
 			space = ciphertext.length - ciphertextOffset;
 		if (length > space)
 			throw new ShortBufferException();
-		if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length || plaintextOffset + length > plaintext.length)
+		if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length || plaintextOffset + length < plaintextOffset || plaintextOffset + length > plaintext.length)
 			throw new IllegalArgumentException();
 		space = plaintext.length - plaintextOffset;
 		if (!haskey) {
