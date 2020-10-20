@@ -28,7 +28,9 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.BadPaddingException;
@@ -48,7 +50,7 @@ public class VectorTests {
 	private int total;
 	private int failed;
 	private int skipped;
-	
+
 	public VectorTests()
 	{
 		total = 0;
@@ -119,7 +121,7 @@ public class VectorTests {
 
 	/**
 	 * Runs a Noise test vector.
-	 * 
+	 *
 	 * @param vec The test vector.
 	 * @param initiator Handshake object for the initiator.
 	 * @param responder Handshake object for the responder.
@@ -155,7 +157,7 @@ public class VectorTests {
 			responder.getFixedHybridKey().setPrivateKey(vec.resp_hybrid, 0);
 		if (vec.resp_psk != null)
 			responder.setPreSharedKey(vec.resp_psk, 0, vec.resp_psk.length);
-		
+
 		// Start both sides of the handshake.
 		assertEquals(HandshakeState.NO_ACTION, initiator.getAction());
 		assertEquals(HandshakeState.NO_ACTION, responder.getAction());
@@ -163,7 +165,7 @@ public class VectorTests {
 		responder.start();
 		assertEquals(HandshakeState.WRITE_MESSAGE, initiator.getAction());
 		assertEquals(HandshakeState.READ_MESSAGE, responder.getAction());
-		
+
 		// Work through the messages one by one until both sides "split".
 		int role = HandshakeState.INITIATOR;
 		int index = 0;
@@ -203,7 +205,7 @@ public class VectorTests {
 				} catch (BadPaddingException e) {
 					// Success!
 				}
-				
+
 				// Look up the pattern to fall back to.
 				String pattern = vec.fallback_pattern;
 				if (pattern == null)
@@ -212,11 +214,11 @@ public class VectorTests {
 				// Initiate fallback on both sides.
 				initiator.fallback(pattern);
 				responder.fallback(pattern);
-				
+
 				// Restart the protocols.
 				initiator.start();
 				responder.start();
-				
+
 				// Only need to fallback once.
 				fallback = false;
 			} else {
@@ -233,13 +235,13 @@ public class VectorTests {
 			assertEquals(HandshakeState.INITIATOR, initiator.getRole());
 			assertEquals(HandshakeState.RESPONDER, responder.getRole());
 		}
-		
+
 		// Handshake finished.  Check the handshake hash values.
 		if (vec.handshake_hash != null) {
 			assertArrayEquals(vec.handshake_hash, initiator.getHandshakeHash());
 			assertArrayEquals(vec.handshake_hash, responder.getHandshakeHash());
 		}
-		
+
 		// Split the two sides to get the transport ciphers.
 		CipherStatePair initPair;
 		CipherStatePair respPair;
@@ -255,7 +257,7 @@ public class VectorTests {
 			respPair = responder.split();
 		assertEquals(HandshakeState.COMPLETE, initiator.getAction());
 		assertEquals(HandshakeState.COMPLETE, responder.getAction());
-		
+
 		// Now handle the data transport.
 		CipherState csend, crecv;
 		for (; index < vec.messages.length; ++index) {
@@ -279,7 +281,7 @@ public class VectorTests {
 			assertEquals(msg.payload.length, plen);
 			assertSubArrayEquals(Integer.toString(index) + ": payload", msg.payload, plaintext);
 		}
-		
+
 		// Clean up.
 		initiator.destroy();
 		responder.destroy();
@@ -289,13 +291,14 @@ public class VectorTests {
 
 	/**
 	 * Processes a single test vector from an input stream.
-	 * 
+	 *
 	 * @param reader The JSON reader for the input stream.
-	 * 
+	 *
 	 * The reader is positioned on the first field of the vector object.
 	 */
 	private void processVector(JsonReader reader) throws IOException
 	{
+    boolean res = true;
 		// Parse the contents of the test vector.
 		TestVector vec = new TestVector();
 		while (reader.hasNext()) {
@@ -370,7 +373,7 @@ public class VectorTests {
 				reader.skipValue();
 			}
 		}
-		
+
 		// Format the complete protocol name.
 		String protocolName = "Noise";
 		if (vec.init_psk != null || vec.resp_psk != null)
@@ -381,7 +384,7 @@ public class VectorTests {
 		protocolName += "_" + vec.pattern + "_" + dh + "_" + vec.cipher + "_" + vec.hash;
 		if (vec.name == null)
 			vec.name = protocolName;
-		
+
 		// Execute the test vector.
 		++total;
 		System.out.print(vec.name);
@@ -418,53 +421,52 @@ public class VectorTests {
 			}
 		}
 	}
+  public void processFile(String filename) throws IOException {
+    try {
+      try (FileInputStream fileStream = new FileInputStream(filename)) {
+        System.out.print(filename + ": ");
+        processInputStream(fileStream);
+      }
+    } catch (FileNotFoundException e) {
+      System.err.println(filename + ": File not found");
+    }
+  }
 
-	/**
-	 * Processes a file from the command-line.
-	 * 
-	 * @param filename The name of the file to process.
-	 */
-	public void processFile(String filename)
-	{
+
+  public void processInputStream(InputStream jsonInputStream) throws IOException {
+    try(Reader streamReader = new BufferedReader(new InputStreamReader(jsonInputStream))) {
+      processReader(streamReader);
+    }
+  }
+
+	public void processReader(Reader jsonStream) throws IOException {
 		total = 0;
 		skipped = 0;
 		failed = 0;
-		try {
-			FileInputStream fileStream = new FileInputStream(filename);
-			try {
-				InputStreamReader streamReader = new InputStreamReader(fileStream);
-				BufferedReader bufferedReader = new BufferedReader(streamReader);
-				JsonReader reader = new JsonReader(bufferedReader);
-				try {
-					reader.beginObject();
-					while (reader.hasNext()) {
-						String name = reader.nextName();
-						if (name.equals("vectors")) {
-							reader.beginArray();
-							while (reader.hasNext() /*&& total < 50*/) {
-								reader.beginObject();
-								processVector(reader);
-								reader.endObject();
-							}
-							reader.endArray();
-						} else {
-							reader.skipValue();
-						}
-					}
-					reader.endObject();
-				} finally {
-					reader.close();
-				}
-			} finally {
-				fileStream.close();
-			}
-		} catch (FileNotFoundException e) {
-			System.err.println(filename + ": File not found");
-		} catch (IOException e) {
-			System.err.println("Exception while parsing JSON: " + e.toString());
-			e.printStackTrace();
-		}
-		System.out.print(filename + ": ");
+    JsonReader reader = new JsonReader(jsonStream);
+    try {
+      reader.beginObject();
+      while (reader.hasNext()) {
+        String name = reader.nextName();
+        if (name.equals("vectors")) {
+          reader.beginArray();
+          while (reader.hasNext() /*&& total < 50*/) {
+            reader.beginObject();
+            processVector(reader);
+            reader.endObject();
+          }
+          reader.endArray();
+        } else {
+          reader.skipValue();
+        }
+      }
+      reader.endObject();
+    } catch (IOException e) {
+      System.err.println("Exception while parsing JSON: " + e.toString());
+      e.printStackTrace();
+    } finally {
+      reader.close();
+    }
 		System.out.print(total);
 		System.out.print(" tests, ");
 		System.out.print(skipped);
@@ -473,7 +475,20 @@ public class VectorTests {
 		System.out.println(" failed");
 	}
 
-	public static void main(String[] args) {
+
+  public int getTotal() {
+    return total;
+  }
+
+  public int getFailed() {
+    return failed;
+  }
+
+  public int getSkipped() {
+    return skipped;
+  }
+
+  public static void main(String[] args) throws IOException {
 		if (args.length == 0) {
 			System.out.println("Usage: VectorTests file1 file2 ...");
 			return;
@@ -482,5 +497,4 @@ public class VectorTests {
 		for (String filename : args)
 			app.processFile(filename);
 	}
-	
 }

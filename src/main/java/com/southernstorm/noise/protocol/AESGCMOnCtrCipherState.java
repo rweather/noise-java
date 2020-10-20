@@ -220,7 +220,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 		int space;
 		if (ciphertextOffset < 0 || ciphertextOffset > ciphertext.length)
 			throw new IllegalArgumentException();
-		if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length || length > plaintext.length || (plaintext.length - plaintextOffset) < length)
+    if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length || length > plaintext.length || (plaintext.length - plaintextOffset) < length)
 			throw new IllegalArgumentException();
 		space = ciphertext.length - ciphertextOffset;
 		if (keySpec == null) {
@@ -269,7 +269,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 			space = ciphertext.length - ciphertextOffset;
 		if (length > space)
 			throw new ShortBufferException();
-		if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length || length > plaintext.length || (plaintext.length - plaintextOffset) < length)
+		if (length < 0 || plaintextOffset < 0 || plaintextOffset > plaintext.length || length > ciphertext.length || (ciphertext.length - ciphertextOffset) < length)
 			throw new IllegalArgumentException();
 		space = plaintext.length - plaintextOffset;
 		if (keySpec == null) {
