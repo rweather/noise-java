@@ -88,7 +88,8 @@ public class NewHope {
 	 * The send buffer must have space for at least NewHope.SENDABYTES bytes
 	 * starting at sendOffset.
 	 * 
-	 * @see sharedb(), shareda()
+	 * @see #sharedb(byte[], int, byte[], int, byte[], int)
+   * @see #shareda(byte[], int, byte[], int)
 	 */
 	public void keygen(byte[] send, int sendOffset)
 	{
@@ -147,7 +148,8 @@ public class NewHope {
 	 * The received buffer must have space for at least NewHope.SENDABYTES
 	 * bytes starting at receivedOffset.
 	 * 
-	 * @see shareda(), keygen()
+	 * @see #shareda(byte[], int, byte[], int)
+   * @see #keygen(byte[], int)
 	 */
 	public void sharedb(byte[] sharedkey, int sharedkeyOffset,
 						byte[] send, int sendOffset,
@@ -221,7 +223,8 @@ public class NewHope {
 	 * The received buffer must have space for at least NewHope.SENDBBYTES bytes
 	 * starting at receivedOffset.
 	 * 
-	 * @see shareda(), keygen()
+	 * @see #shareda(byte[], int, byte[], int)
+   * @see #keygen(byte[], int)
 	 */
 	public void shareda(byte[] sharedkey, int sharedkeyOffset,
 						byte[] received, int receivedOffset)
