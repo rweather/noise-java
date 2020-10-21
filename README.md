@@ -1,3 +1,24 @@
+# Fork 
+
+This fork has been done to make the Noise-java library available for adding 
+as a [Gradle source dependency](https://blog.gradle.org/introducing-source-dependencies)
+
+To add the library to your Gradle project:   
+
+`build.gradle`:
+```gradle
+dependencies {
+  implementation 'tech.pegasys.teku:noise-java:0.1.0'
+}
+```
+`settings.gradle`:
+```gradle
+sourceControl {
+    gitRepository("https://github.com/ConsenSys/noise-java") {
+        producesModule("tech.pegasys.teku:noise-java")
+    }
+}
+```
 
 Noise-Java Library
 ==================
