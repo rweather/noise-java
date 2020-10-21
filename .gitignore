@@ -4,3 +4,6 @@ target
 .project
 doc
 *.class
+/.gradle/
+/build/
+/.idea/

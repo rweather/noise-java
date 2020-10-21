@@ -1,0 +1,50 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+group 'tech.pegasys.teku'
+version '1.0'
+
+repositories {
+    jcenter()
+    mavenCentral()
+    google()
+}
+
+apply plugin: "java"
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+dependencies {
+
+    // JUnit testing.
+    testImplementation 'javax.xml.bind:jaxb-api:2.3.0'
+    testImplementation 'junit:junit:4.13.1'
+    testCompile "org.junit.jupiter:junit-jupiter-api:5.2.0"
+    testCompile "org.junit.jupiter:junit-jupiter-params:5.2.0"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:5.2.0"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
