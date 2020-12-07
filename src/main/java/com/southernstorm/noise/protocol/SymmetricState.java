@@ -277,7 +277,7 @@ class SymmetricState implements Destroyable {
 			try {
 				c1 = cipher.fork(k1, 0);
 				c2 = cipher.fork(k2, 0);
-				pair = new CipherStatePair(c1, c2);
+				pair = new CipherStatePair(new NonceCheckCipherState(c1), new NonceCheckCipherState(c2));
 			} finally {
 				if (c1 == null || c2 == null || pair == null) {
 					// Could not create some of the objects.  Clean up the others
