@@ -19,18 +19,16 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package com.southernstorm.noise.tests;
 
-import static org.junit.Assert.*;
+import com.southernstorm.noise.protocol.Noise;
 
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.junit.Test;
-
-import com.southernstorm.noise.protocol.Noise;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  * Perform tests on the hash algorithms used by Noise.

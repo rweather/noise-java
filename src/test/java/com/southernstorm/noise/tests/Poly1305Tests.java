@@ -19,16 +19,14 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package com.southernstorm.noise.tests;
 
-import static org.junit.Assert.*;
+import com.southernstorm.noise.crypto.Poly1305;
 
 import java.util.Arrays;
 
-import org.junit.Test;
-
-import com.southernstorm.noise.crypto.Poly1305;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import org.junit.jupiter.api.Test;
 
 /**
  * Perform tests on the Poly1305 implementation in isolation from ChaChaPoly.
