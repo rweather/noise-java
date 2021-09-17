@@ -19,10 +19,12 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package com.southernstorm.noise.tests;
 
-import static org.junit.Assert.*;
+import com.southernstorm.json.JsonReader;
+import com.southernstorm.noise.protocol.CipherState;
+import com.southernstorm.noise.protocol.CipherStatePair;
+import com.southernstorm.noise.protocol.HandshakeState;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -37,10 +39,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.ShortBufferException;
 import javax.xml.bind.DatatypeConverter;
 
-import com.southernstorm.json.JsonReader;
-import com.southernstorm.noise.protocol.CipherState;
-import com.southernstorm.noise.protocol.CipherStatePair;
-import com.southernstorm.noise.protocol.HandshakeState;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Executes Noise vector tests in JSON format.
@@ -116,7 +115,7 @@ public class VectorTests {
 	private void assertSubArrayEquals(String msg, byte[] expected, byte[] actual)
 	{
 		for (int index = 0; index < expected.length; ++index)
-			assertEquals(msg + "[" + Integer.toString(index) + "]", expected[index], actual[index]);
+			assertEquals(expected[index], actual[index],msg + "[" + index + "]");
 	}
 
 	/**

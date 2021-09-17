@@ -2,7 +2,8 @@ package com.southernstorm.noise.tests;
 
 import java.io.InputStream;
 import java.net.URL;
-import org.junit.Assert;
+
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 public class UnitVectorTests {
@@ -16,7 +17,7 @@ public class UnitVectorTests {
             + "/tests/vector/noise-c-basic.txt").openStream()) {
       VectorTests vectorTests = new VectorTests();
       vectorTests.processInputStream(stream);
-      Assert.assertEquals(vectorTests.getFailed(), 0);
+      assertEquals(vectorTests.getFailed(), 0);
     }
   }
 }
