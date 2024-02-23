@@ -149,10 +149,11 @@ public class CipherStateTests {
 			fail();
 		}
 
-	    // Fast-forward the nonce to just before the rollover.  We will be able
-	    // to decrypt one more block, and then the next request will be rejected.
-		cipher.setNonce(-2L);
 		try {
+			// Fast-forward the nonce to just before the rollover.  We will be able
+			// to decrypt one more block, and then the next request will be rejected.
+			cipher.setNonce(-2L);
+
 			buffer = new byte [plaintextBytes.length];
 			Arrays.fill(buffer, (byte)0xAA);
 			try {
@@ -161,6 +162,9 @@ public class CipherStateTests {
 			} catch (BadPaddingException e) {
 				// Success!
 			}
+
+			cipher.setNonce(-1L);
+
 			try {
 				cipher.decryptWithAd(adBytes, ciphertextBytes, 0, buffer, 0, ciphertextBytes.length);
 				fail();

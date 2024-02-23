@@ -130,8 +130,7 @@ class AESGCMFallbackCipherState implements CipherState {
 		iv[13] = 0;
 		iv[14] = 0;
 		iv[15] = 1;
-		++n;
-		
+
 		// Encrypt a block of zeroes to generate the hash key to XOR
 		// the GHASH tag with at the end of the encrypt/decrypt operation.
 		Arrays.fill(hashKey, (byte)0);
@@ -207,6 +206,7 @@ class AESGCMFallbackCipherState implements CipherState {
 		ghash.finish(ciphertext, ciphertextOffset + length, 16);
 		for (int index = 0; index < 16; ++index)
 			ciphertext[ciphertextOffset + length + index] ^= hashKey[index];
+		n += 1;
 		return length + 16;
 	}
 
@@ -247,6 +247,7 @@ class AESGCMFallbackCipherState implements CipherState {
 		if ((temp & 0xFF) != 0)
 			Noise.throwBadTagException();
 		encryptCTR(ciphertext, ciphertextOffset, plaintext, plaintextOffset, dataLen);
+		n += 1;
 		return dataLen;
 	}
 
