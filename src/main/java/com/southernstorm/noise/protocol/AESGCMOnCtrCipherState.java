@@ -190,8 +190,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 		iv[13] = 0;
 		iv[14] = 0;
 		iv[15] = 1;
-		++n;
-		
+
 		// Initialize the CTR mode cipher with the key and IV.
 		cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
 		
@@ -255,6 +254,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 		ghash.finish(ciphertext, ciphertextOffset + length, 16);
 		for (int index = 0; index < 16; ++index)
 			ciphertext[ciphertextOffset + length + index] ^= hashKey[index];
+		n += 1;
 		return length + 16;
 	}
 
@@ -312,6 +312,7 @@ class AESGCMOnCtrCipherState implements CipherState {
 			// Shouldn't happen.
 			throw new IllegalStateException(e);
 		}
+		n += 1;
 		return dataLen;
 	}
 
