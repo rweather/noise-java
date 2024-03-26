@@ -139,6 +139,7 @@ class SymmetricState implements Destroyable {
 	 * @param key The pre-shared key value.
 	 */
 	public void mixPreSharedKey(byte[] key)
+
 	{
 		byte[] temp = new byte [hash.getDigestLength()];
 		try {

@@ -38,6 +38,7 @@ class Pattern {
 	public static final short SS = 6;
 	public static final short F = 7;
 	public static final short FF = 8;
+	public static final short PSK = 9;
 	public static final short FLIP_DIR = 255;
 	
 	// Pattern flag bits.
@@ -91,6 +92,15 @@ class Pattern {
 	    FLAG_LOCAL_EPHEMERAL |
 	    FLAG_REMOTE_EPHEMERAL,
 
+	    E,
+	    FLIP_DIR,
+	    E,
+	    EE
+	};
+	private static final short[] noise_pattern_NNpsk0 = {
+	    FLAG_LOCAL_EPHEMERAL |
+	    FLAG_REMOTE_EPHEMERAL,
+		PSK,
 	    E,
 	    FLIP_DIR,
 	    E,
@@ -747,6 +757,8 @@ class Pattern {
 			return noise_pattern_X;
 		else if (name.equals("NN"))
 			return noise_pattern_NN;
+		else if (name.equals("NNpsk0"))
+			return noise_pattern_NNpsk0;
 		else if (name.equals("NK"))
 			return noise_pattern_NK;
 		else if (name.equals("NX"))
