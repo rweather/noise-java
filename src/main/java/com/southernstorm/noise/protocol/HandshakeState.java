@@ -48,8 +48,8 @@ public class HandshakeState implements Destroyable {
 	private short[] pattern;
 	private int patternIndex;
 	private byte[] preSharedKeyForNoisePSK;
-	private byte[] preSharedKeyForNNpsk;
 	private byte[] prologue;
+	private boolean isNoisePsk;
 
 	/**
 	 * Enumerated value that indicates that the handshake object
@@ -134,11 +134,6 @@ public class HandshakeState implements Destroyable {
 	private static final int FALLBACK_POSSIBLE = 0x40;
 
 	/**
-	 * Pre-shared key is required for the handshake.
-	 */
-	private static final int PSK_REQUIRED_NNPSK = 0x80;
-
-	/**
 	 * Creates a new Noise handshake.
 	 * 
 	 * @param protocolName The name of the Noise protocol.
@@ -164,15 +159,16 @@ public class HandshakeState implements Destroyable {
 		String hash = components[4];
 		if (!prefix.equals("Noise") && !prefix.equals("NoisePSK"))
 			throw new IllegalArgumentException("Prefix must be Noise or NoisePSK");
+		isNoisePsk = prefix.equals("NoisePSK");
 		pattern = Pattern.lookup(patternId);
 		if (pattern == null)
-			throw new IllegalArgumentException("Handshake pattern is not recognized");
+			throw new IllegalArgumentException("Handshake pattern is not recognized " + patternId + " " + protocolName);
 		short flags = pattern[0];
 		int extraReqs = 0;
 		if ((flags & Pattern.FLAG_REMOTE_REQUIRED) != 0 && patternId.length() > 1)
 			extraReqs |= FALLBACK_POSSIBLE;
-		if(patternId.contains("NNpsk")) {
-			extraReqs |= PSK_REQUIRED_NNPSK;
+		if((flags & Pattern.FLAG_PSK) != 0) {
+			extraReqs |= PSK_REQUIRED;
 		}
 		if (role == RESPONDER) {
 			// Reverse the pattern flags so that the responder is "local".
@@ -307,41 +303,6 @@ public class HandshakeState implements Destroyable {
 			preSharedKeyForNoisePSK = null;
 		}
 		preSharedKeyForNoisePSK = Noise.copySubArray(key, offset, length);
-	}
-	/**
-	 * Sets the pre-shared key for this handshake.
-	 *
-	 * @param key Buffer containing the pre-shared key value.
-	 * @param offset Offset into the buffer of the first byte of the key.
-	 * @param length The length of the pre-shared key, which must be 32.
-	 *
-	 * @throws IllegalArgumentException The length is not 32.
-	 *
-	 * @throws UnsupportedOperationException Pre-shared keys are not
-	 * supported for this handshake type.
-	 *
-	 * @throws IllegalStateException The handshake has already started,
-	 * so the pre-shared key can no longer be set.
-	 */
-	public void setPreSharedKeyForNNpsk(byte[] key, int offset, int length)
-	{
-		if (length != 32) {
-			throw new IllegalArgumentException
-				("Pre-shared keys must be 32 bytes in length");
-		}
-		if ((requirements & PSK_REQUIRED_NNPSK) == 0) {
-			throw new UnsupportedOperationException
-				("Pre-shared keys are not supported for this handshake");
-		}
-		if (action != NO_ACTION) {
-			throw new IllegalStateException
-				("Handshake has already started; cannot set pre-shared key");
-		}
-		if (preSharedKeyForNNpsk != null) {
-			Noise.destroy(preSharedKeyForNNpsk);
-			preSharedKeyForNNpsk = null;
-		}
-		preSharedKeyForNNpsk = Noise.copySubArray(key, offset, length);
 	}
 
 	/**
