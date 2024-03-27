@@ -64,14 +64,9 @@ class SymmetricState implements Destroyable {
 		prev_h = new byte [hashLength];
 		
 		byte[] protocolNameBytes;
-		try {
-			protocolNameBytes = protocolName.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			// If UTF-8 is not supported, then we are definitely in trouble!
-			throw new UnsupportedOperationException("UTF-8 encoding is not supported");
-		}
-		
-		if (protocolNameBytes.length <= hashLength) {
+        protocolNameBytes = protocolName.getBytes(StandardCharsets.UTF_8);
+
+        if (protocolNameBytes.length <= hashLength) {
 			System.arraycopy(protocolNameBytes, 0, h, 0, protocolNameBytes.length);
 			Arrays.fill(h, protocolNameBytes.length, h.length, (byte)0);
 		} else {
@@ -163,6 +158,43 @@ class SymmetricState implements Destroyable {
 			mixHash(temp, 0, temp.length);
 		} finally {
 			Noise.destroy(temp);
+		}
+	}
+
+	/**
+	 * Mixes data into the chaining key.
+	 *
+	 * @param data The buffer containing the data to mix in.
+	 * @param offset The offset of the first data byte to mix in.
+	 * @param length The number of bytes to mix in.
+	 */
+	public void mixKeyAndHash(byte[] data, int offset, int length)
+	{
+		int keyLength = cipher.getKeyLength();
+		byte[] tempKey = new byte [keyLength];
+
+		int hashLength = hash.getDigestLength();
+		byte [] tempHash = new byte [hashLength];
+
+		try {
+			hkdf(ck, 0, ck.length,
+					data, offset, length,
+					ck, 0, ck.length,
+					tempHash, 0, hashLength,
+					tempKey, 0, keyLength);
+
+			mixHash(tempHash, 0, hashLength);
+
+			// Truncate tempKey
+			if (hashLength == 64 && keyLength > 32) {
+				byte[] newKey = Noise.copySubArray(tempKey, 0, 32);
+				Noise.destroy(tempKey);
+				tempKey = newKey;
+			}
+			cipher.initializeKey(tempKey, 0);
+		} finally {
+			Noise.destroy(tempKey);
+			Noise.destroy(tempHash);
 		}
 	}
 
@@ -466,6 +498,19 @@ class SymmetricState implements Destroyable {
 			  		  byte[] output1, int output1Offset, int output1Length,
 			  		  byte[] output2, int output2Offset, int output2Length)
 	{
+		hkdf(key, keyOffset, keyLength,
+			 data, dataOffset, dataLength,
+			 output1, output1Offset, output1Length,
+			 output2, output2Offset, output2Length,
+		     null, 0,0);
+	}
+
+	private void hkdf(byte[] key, int keyOffset, int keyLength,
+					  byte[] data, int dataOffset, int dataLength,
+					  byte[] output1, int output1Offset, int output1Length,
+					  byte[] output2, int output2Offset, int output2Length,
+					  byte[] output3, int output3Offset, int output3Length)
+	{
 		int hashLength = hash.getDigestLength();
 		byte[] tempKey = new byte [hashLength];
 		byte[] tempHash = new byte [hashLength + 1];
@@ -477,6 +522,11 @@ class SymmetricState implements Destroyable {
 			tempHash[hashLength] = (byte)0x02;
 			hmac(tempKey, 0, hashLength, tempHash, 0, hashLength + 1, tempHash, 0, hashLength);
 			System.arraycopy(tempHash, 0, output2, output2Offset, output2Length);
+			if (output3 != null) {
+				tempHash[hashLength] = (byte)0x03;
+				hmac(tempKey, 0, hashLength, tempHash, 0, hashLength + 1, tempHash, 0, hashLength);
+				System.arraycopy(tempHash, 0, output3, output3Offset, output3Length);
+			}
 		} finally {
 			Noise.destroy(tempKey);
 			Noise.destroy(tempHash);

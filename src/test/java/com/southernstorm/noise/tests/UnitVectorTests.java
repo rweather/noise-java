@@ -16,7 +16,17 @@ public class UnitVectorTests {
             + "/tests/vector/noise-c-basic.txt").openStream()) {
       VectorTests vectorTests = new VectorTests();
       vectorTests.processInputStream(stream);
-      Assert.assertEquals(vectorTests.getFailed(), 0);
+      Assert.assertEquals(0, vectorTests.getFailed());
+    }
+  }
+
+  @Test
+  public void testCacophonyVector() throws Exception {
+    try (InputStream stream = new URL(
+            "https://raw.githubusercontent.com/centromere/cacophony/master/vectors/cacophony.txt").openStream()) {
+      VectorTests vectorTests = new VectorTests();
+      vectorTests.processInputStream(stream);
+      Assert.assertEquals(0, vectorTests.getFailed());
     }
   }
 }

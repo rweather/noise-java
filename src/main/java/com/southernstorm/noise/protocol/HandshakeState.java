@@ -552,10 +552,6 @@ public class HandshakeState implements Destroyable {
 			if (preSharedKeyForNoisePSK == null)
 				throw new IllegalStateException("Pre-shared key required");
 		}
-		if ((requirements & PSK_REQUIRED_NNPSK) != 0) {
-			if (preSharedKeyForNNpsk == null)
-				throw new IllegalStateException("Pre-shared key for NNpsk required");
-		}
 
 		// Hash the prologue value.
 		if (prologue != null)
@@ -564,7 +560,8 @@ public class HandshakeState implements Destroyable {
 			symmetric.mixHash(emptyPrologue, 0, 0);
 		
 		// Hash the pre-shared key into the chaining key and handshake hash.
-		if (preSharedKeyForNoisePSK != null)
+		// FIXME: AM: isNoisePsk needed to support NNpsk0 etc. Why? ;)
+		if (isNoisePsk && preSharedKeyForNoisePSK != null)
 			symmetric.mixPreSharedKey(preSharedKeyForNoisePSK);
 		
 		// Mix the pre-supplied public keys into the handshake hash.
@@ -955,7 +952,7 @@ public class HandshakeState implements Destroyable {
 
 					case Pattern.PSK:
 					{
-						symmetric.mixPreSharedKey(preSharedKeyForNNpsk);
+						symmetric.mixKeyAndHash(preSharedKeyForNoisePSK, 0, preSharedKeyForNoisePSK.length);
 					}
 					break;
 
@@ -1161,7 +1158,7 @@ public class HandshakeState implements Destroyable {
 					break;
 					case Pattern.PSK:
 					{
-						symmetric.mixPreSharedKey(preSharedKeyForNNpsk);
+						symmetric.mixKeyAndHash(preSharedKeyForNoisePSK, 0, preSharedKeyForNoisePSK.length);
 					}
 					break;
 
@@ -1276,8 +1273,6 @@ public class HandshakeState implements Destroyable {
 			fixedHybrid.destroy();
 		if (preSharedKeyForNoisePSK != null)
 			Noise.destroy(preSharedKeyForNoisePSK);
-		if (preSharedKeyForNNpsk != null)
-			Noise.destroy(preSharedKeyForNNpsk);
 		if (prologue != null)
 			Noise.destroy(prologue);
 	}
