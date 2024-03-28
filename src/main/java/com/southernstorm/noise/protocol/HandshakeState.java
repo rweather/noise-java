@@ -49,6 +49,7 @@ public class HandshakeState implements Destroyable {
 	private int patternIndex;
 	private byte[] preSharedKey;
 	private byte[] prologue;
+	private boolean isNoisePsk;
 
 	/**
 	 * Enumerated value that indicates that the handshake object
@@ -158,13 +159,17 @@ public class HandshakeState implements Destroyable {
 		String hash = components[4];
 		if (!prefix.equals("Noise") && !prefix.equals("NoisePSK"))
 			throw new IllegalArgumentException("Prefix must be Noise or NoisePSK");
+		isNoisePsk = prefix.equals("NoisePSK");
 		pattern = Pattern.lookup(patternId);
 		if (pattern == null)
-			throw new IllegalArgumentException("Handshake pattern is not recognized");
+			throw new IllegalArgumentException("Handshake pattern is not recognized " + patternId + " " + protocolName);
 		short flags = pattern[0];
 		int extraReqs = 0;
 		if ((flags & Pattern.FLAG_REMOTE_REQUIRED) != 0 && patternId.length() > 1)
 			extraReqs |= FALLBACK_POSSIBLE;
+		if((flags & Pattern.FLAG_PSK) != 0) {
+			extraReqs |= PSK_REQUIRED;
+		}
 		if (role == RESPONDER) {
 			// Reverse the pattern flags so that the responder is "local".
 			flags = Pattern.reverseFlags(flags);
@@ -299,7 +304,7 @@ public class HandshakeState implements Destroyable {
 		}
 		preSharedKey = Noise.copySubArray(key, offset, length);
 	}
-	
+
 	/**
 	 * Sets the prologue for this handshake.
 	 * 
@@ -508,7 +513,7 @@ public class HandshakeState implements Destroyable {
 			if (preSharedKey == null)
 				throw new IllegalStateException("Pre-shared key required");
 		}
-		
+
 		// Hash the prologue value.
 		if (prologue != null)
 			symmetric.mixHash(prologue, 0, prologue.length);
@@ -516,9 +521,10 @@ public class HandshakeState implements Destroyable {
 			symmetric.mixHash(emptyPrologue, 0, 0);
 		
 		// Hash the pre-shared key into the chaining key and handshake hash.
-		if (preSharedKey != null)
+		// FIXME: AM: isNoisePsk needed to support NNpsk0 etc. Why? ;)
+		if (isNoisePsk && preSharedKey != null)
 			symmetric.mixPreSharedKey(preSharedKey);
-		
+
 		// Mix the pre-supplied public keys into the handshake hash.
 		if (isInitiator) {
 			if ((requirements & LOCAL_PREMSG) != 0)
@@ -905,6 +911,12 @@ public class HandshakeState implements Destroyable {
 					}
 					break;
 
+					case Pattern.PSK:
+					{
+						symmetric.mixKeyAndHash(preSharedKey, 0, preSharedKey.length);
+					}
+					break;
+
 					default:
 					{
 						// Unknown token code.  Abort.
@@ -1103,6 +1115,11 @@ public class HandshakeState implements Destroyable {
 					{
 						// DH operation with initiator and responder hybrid keys.
 						mixDH(localHybrid, remoteHybrid);
+					}
+					break;
+					case Pattern.PSK:
+					{
+						symmetric.mixKeyAndHash(preSharedKey, 0, preSharedKey.length);
 					}
 					break;
 

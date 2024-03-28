@@ -38,6 +38,7 @@ class Pattern {
 	public static final short SS = 6;
 	public static final short F = 7;
 	public static final short FF = 8;
+	public static final short PSK = 9;
 	public static final short FLIP_DIR = 255;
 	
 	// Pattern flag bits.
@@ -53,6 +54,7 @@ class Pattern {
 	public static final short FLAG_REMOTE_EPHEM_REQ = 0x0800;
 	public static final short FLAG_REMOTE_HYBRID = 0x1000;
 	public static final short FLAG_REMOTE_HYBRID_REQ = 0x2000;
+	public static final short FLAG_PSK = 0x4000;
 
 	private static final short[] noise_pattern_N = {
 	    FLAG_LOCAL_EPHEMERAL |
@@ -737,8 +739,52 @@ class Pattern {
 	 * @param name The name of the pattern.
 	 * @return The pattern description or null.
 	 */
-	public static short[] lookup(String name)
-	{
+	public static short[] lookup(String name) {
+		int pskIndex = pskModifier(name);
+		name = cutPsk(name);
+		short[] pattern = get(name);
+		pattern = insertPsk(pattern, pskIndex);
+		return pattern;
+	}
+
+	/**
+	 * Insert psk token if needed
+	 */
+	private static short[] insertPsk(short[] pattern, int pskIndex) {
+		if (pattern != null && pskIndex > -1) {
+			if (pskIndex != 0) {
+				int handshake = 0;
+				int pos = 1;
+				for (; pos < pattern.length; pos++) {
+					if (pattern[pos] == FLIP_DIR) {
+						handshake++;
+					}
+					if (handshake == pskIndex) {
+						break;
+					}
+				}
+				pskIndex = pos - 1;
+			}
+			pattern = insertPskTokenAt(pattern, pskIndex);
+			pattern[0] |= FLAG_PSK;
+		}
+		return pattern;
+	}
+
+	private static short[] insertPskTokenAt(short[] pattern, int pskIndex) {
+		short[] newPattern = new short[pattern.length + 1];
+		for (int pos = 0; pos <= pskIndex; pos++) {
+			newPattern[pos] = pattern[pos];
+		}
+		newPattern[pskIndex + 1] = PSK;
+		for (int pos = pskIndex + 1; pos < pattern.length; pos++) {
+			newPattern[pos + 1] = pattern[pos];
+		}
+		return newPattern;
+	}
+
+	private static short[] get(String name) {
+
 		if (name.equals("N"))
 			return noise_pattern_N;
 		else if (name.equals("K"))
@@ -820,6 +866,29 @@ class Pattern {
 		else if (name.equals("IXnoidh+hfs"))
 			return noise_pattern_IXnoidh_hfs;
 		return null;
+	}
+
+	private static String cutPsk(String name) {
+		int pos = name.indexOf("+psk");
+		if (pos > 0) {
+			return name.substring(0, pos) + name.substring(pos + 4);
+		}
+		pos = name.indexOf("psk");
+		if (pos > 0) {
+			return name.substring(0, pos) + name.substring(pos + 4);
+		}
+		return name;
+	}
+
+	/*
+	 * determine the psk modifier if used in pattern.
+	 */
+	private static int pskModifier(String name) {
+		int pos = name.indexOf("psk");
+		if (pos > -1) {
+			return Integer.parseInt(name.substring(pos + 3, pos + 4));
+		}
+		return -1;
 	}
 
 	/**
