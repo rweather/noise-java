@@ -47,7 +47,7 @@ public class HandshakeState implements Destroyable {
 	private int requirements;
 	private short[] pattern;
 	private int patternIndex;
-	private byte[] preSharedKeyForNoisePSK;
+	private byte[] preSharedKey;
 	private byte[] prologue;
 	private boolean isNoisePsk;
 
@@ -251,7 +251,7 @@ public class HandshakeState implements Destroyable {
 	 */
 	public boolean needsPreSharedKey()
 	{
-		if (preSharedKeyForNoisePSK != null)
+		if (preSharedKey != null)
 			return false;
 		else
 			return (requirements & PSK_REQUIRED) != 0;
@@ -266,7 +266,7 @@ public class HandshakeState implements Destroyable {
 	 */
 	public boolean hasPreSharedKey()
 	{
-		return preSharedKeyForNoisePSK != null;
+		return preSharedKey != null;
 	}
 
 	/**
@@ -298,11 +298,11 @@ public class HandshakeState implements Destroyable {
 			throw new IllegalStateException
 				("Handshake has already started; cannot set pre-shared key");
 		}
-		if (preSharedKeyForNoisePSK != null) {
-			Noise.destroy(preSharedKeyForNoisePSK);
-			preSharedKeyForNoisePSK = null;
+		if (preSharedKey != null) {
+			Noise.destroy(preSharedKey);
+			preSharedKey = null;
 		}
-		preSharedKeyForNoisePSK = Noise.copySubArray(key, offset, length);
+		preSharedKey = Noise.copySubArray(key, offset, length);
 	}
 
 	/**
@@ -510,7 +510,7 @@ public class HandshakeState implements Destroyable {
 				throw new IllegalStateException("Remote static key required");
 		}
 		if ((requirements & PSK_REQUIRED) != 0) {
-			if (preSharedKeyForNoisePSK == null)
+			if (preSharedKey == null)
 				throw new IllegalStateException("Pre-shared key required");
 		}
 
@@ -522,9 +522,9 @@ public class HandshakeState implements Destroyable {
 		
 		// Hash the pre-shared key into the chaining key and handshake hash.
 		// FIXME: AM: isNoisePsk needed to support NNpsk0 etc. Why? ;)
-		if (isNoisePsk && preSharedKeyForNoisePSK != null)
-			symmetric.mixPreSharedKey(preSharedKeyForNoisePSK);
-		
+		if (isNoisePsk && preSharedKey != null)
+			symmetric.mixPreSharedKey(preSharedKey);
+
 		// Mix the pre-supplied public keys into the handshake hash.
 		if (isInitiator) {
 			if ((requirements & LOCAL_PREMSG) != 0)
@@ -533,7 +533,7 @@ public class HandshakeState implements Destroyable {
 				symmetric.mixPublicKey(remoteEphemeral);
 				if (remoteHybrid != null)
 					symmetric.mixPublicKey(remoteHybrid);
-				if (preSharedKeyForNoisePSK != null)
+				if (preSharedKey != null)
 					symmetric.mixPublicKeyIntoCK(remoteEphemeral);
 			}
 			if ((requirements & REMOTE_PREMSG) != 0)
@@ -545,7 +545,7 @@ public class HandshakeState implements Destroyable {
 				symmetric.mixPublicKey(localEphemeral);
 				if (localHybrid != null)
 					symmetric.mixPublicKey(localHybrid);
-				if (preSharedKeyForNoisePSK != null)
+				if (preSharedKey != null)
 					symmetric.mixPublicKeyIntoCK(localEphemeral);
 			}
 			if ((requirements & LOCAL_PREMSG) != 0)
@@ -818,7 +818,7 @@ public class HandshakeState implements Destroyable {
 
 						// If the protocol is using pre-shared keys, then also mix
 			            // the local ephemeral key into the chaining key.
-						if (preSharedKeyForNoisePSK != null)
+						if (preSharedKey != null)
 							symmetric.mixKey(message, messagePosn, len);
 						messagePosn += len;
 					}
@@ -913,7 +913,7 @@ public class HandshakeState implements Destroyable {
 
 					case Pattern.PSK:
 					{
-						symmetric.mixKeyAndHash(preSharedKeyForNoisePSK, 0, preSharedKeyForNoisePSK.length);
+						symmetric.mixKeyAndHash(preSharedKey, 0, preSharedKey.length);
 					}
 					break;
 
@@ -1023,7 +1023,7 @@ public class HandshakeState implements Destroyable {
 
 						// If the protocol is using pre-shared keys, then also mix
 			            // the remote ephemeral key into the chaining key.
-						if (preSharedKeyForNoisePSK != null)
+						if (preSharedKey != null)
 							symmetric.mixKey(message, messageOffset, len);
 						messageOffset += len;
 					}
@@ -1119,7 +1119,7 @@ public class HandshakeState implements Destroyable {
 					break;
 					case Pattern.PSK:
 					{
-						symmetric.mixKeyAndHash(preSharedKeyForNoisePSK, 0, preSharedKeyForNoisePSK.length);
+						symmetric.mixKeyAndHash(preSharedKey, 0, preSharedKey.length);
 					}
 					break;
 
@@ -1232,8 +1232,8 @@ public class HandshakeState implements Destroyable {
 			fixedEphemeral.destroy();
 		if (fixedHybrid != null)
 			fixedHybrid.destroy();
-		if (preSharedKeyForNoisePSK != null)
-			Noise.destroy(preSharedKeyForNoisePSK);
+		if (preSharedKey != null)
+			Noise.destroy(preSharedKey);
 		if (prologue != null)
 			Noise.destroy(prologue);
 	}
